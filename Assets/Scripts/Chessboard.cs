@@ -10,7 +10,7 @@ public class Chessboard : MonoBehaviour
     [Header("Art stuff")]
     [SerializeField] private Material tileMaterial;
     [SerializeField] private float tileSize = 1.0f;
-    [SerializeField] private float yOffset = -0.2f;
+    [SerializeField] private float yOffset = 0.01f;
     [SerializeField] private Vector3 boardCenter = Vector3.zero;
 
     // LOGIC
@@ -24,7 +24,7 @@ public class Chessboard : MonoBehaviour
     private void Awake() // 게임 실행 시 chess board 생성
     {
         transform.position = new Vector3(-3.5f, 0, -3.5f);
-        GenerateAllTiles(1, TILE_COUNT_X, TILE_COUNT_Y); // 8 x 8 chess board 생성 (GenereateAllTiles 호출)
+        GenerateAllTiles(tileSize, TILE_COUNT_X, TILE_COUNT_Y); // 8 x 8 chess board 생성 (GenereateAllTiles 호출)
     }
     private void Update()
     {
