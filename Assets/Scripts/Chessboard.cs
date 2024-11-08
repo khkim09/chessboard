@@ -9,6 +9,9 @@ public class Chessboard : MonoBehaviour
 {
     [Header("Art stuff")]
     [SerializeField] private Material tileMaterial;
+    [SerializeField] private float tileSize = 1.0f;
+    [SerializeField] private float yOffset = -0.2f;
+    [SerializeField] private Vector3 boardCenter = Vector3.zero;
 
     // LOGIC
     private const int TILE_COUNT_X = 8;
@@ -16,9 +19,11 @@ public class Chessboard : MonoBehaviour
     private GameObject[,] tiles; // 2차원 array
     private Camera currentCamera; // 카메라
     private Vector2Int currentHover; // 마우스로 가리키고 있는 vector
+    private Vector3 bounds;
 
     private void Awake() // 게임 실행 시 chess board 생성
     {
+        transform.position = new Vector3(-3.5f, 0, -3.5f);
         GenerateAllTiles(1, TILE_COUNT_X, TILE_COUNT_Y); // 8 x 8 chess board 생성 (GenereateAllTiles 호출)
     }
     private void Update()
@@ -65,6 +70,10 @@ public class Chessboard : MonoBehaviour
     // Generate the board
     private void GenerateAllTiles(float tileSize, int tileCountX, int tileCountY) // generate floor
     {
+        // 주석 필요 !!
+        yOffset += transform.position.y;
+        bounds = new Vector3((tileCountX / 2) * tileSize, 0, (tileCountX / 2) * tileSize) + boardCenter;
+
         tiles = new GameObject[tileCountX, tileCountY]; // 2차원 array 초기화
         for (int x = 0; x < tileCountX; x++)
             for (int y = 0; y < tileCountY; y++)
@@ -82,12 +91,12 @@ public class Chessboard : MonoBehaviour
         tileObject.AddComponent<MeshRenderer>().material = tileMaterial;
 
         Vector3[] vertices = new Vector3[4];
-        vertices[0] = new Vector3(x * tileSize, 0, y * tileSize); // 가로, 높이, 세로
-        vertices[1] = new Vector3(x * tileSize, 0, (y + 1) * tileSize);
-        vertices[2] = new Vector3((x + 1) * tileSize, 0, y * tileSize);
-        vertices[3] = new Vector3((x + 1) * tileSize, 0, (y + 1) * tileSize);
+        vertices[0] = new Vector3(x * tileSize, yOffset, y * tileSize) - bounds; // 가로, 높이, 세로( - bounds 주석 필요 !!)
+        vertices[1] = new Vector3(x * tileSize, yOffset, (y + 1) * tileSize) - bounds;
+        vertices[2] = new Vector3((x + 1) * tileSize, yOffset, y * tileSize) - bounds;
+        vertices[3] = new Vector3((x + 1) * tileSize, yOffset, (y + 1) * tileSize) - bounds;
 
-        int[] tris = new int[] { 0, 1, 2, 1, 3, 2 }; // 삼깍형 생성 (0,1,2), (1,3,2)
+        int[] tris = new int[] { 0, 1, 2, 1, 3, 2 }; // 삼각형 생성 (0,1,2), (1,3,2)
 
         mesh.vertices = vertices;
         mesh.triangles = tris;
