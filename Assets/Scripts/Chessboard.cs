@@ -7,24 +7,34 @@ using UnityEngine.UIElements;
 
 public class Chessboard : MonoBehaviour
 {
-    [Header("Art stuff")]
+    [Header("Art stuff")] // Serialize field의 소제목
     [SerializeField] private Material tileMaterial;
     [SerializeField] private float tileSize = 1.0f;
     [SerializeField] private float yOffset = 0.01f;
     [SerializeField] private Vector3 boardCenter = Vector3.zero;
 
+    [Header("Prefabs && Materials")] // array - prefabs & materials
+    [SerializeField] private GameObject[] prefabs;
+    [SerializeField] private Material[] teamMaterials;
+
     // LOGIC
+    private ChessPiece[,] chessPieces; // 2차원 array (chess 말)
+
     private const int TILE_COUNT_X = 8;
     private const int TILE_COUNT_Y = 8;
-    private GameObject[,] tiles; // 2차원 array
+    private GameObject[,] tiles; // 2차원 array (chess board)
+
     private Camera currentCamera; // 카메라
     private Vector2Int currentHover; // 마우스로 가리키고 있는 vector
     private Vector3 bounds;
 
-    private void Awake() // 게임 실행 시 chess board 생성
+    private void Awake() // game start 시 setting 사항
     {
-        transform.position = new Vector3(-3.5f, 0, -3.5f);
+        transform.position = new Vector3(-3.5f, 0, -3.5f); // 게임 시작과 동시에 chess board 위치 알맞게 수정
+        
         GenerateAllTiles(tileSize, TILE_COUNT_X, TILE_COUNT_Y); // 8 x 8 chess board 생성 (GenereateAllTiles 호출)
+        SpawnAllPieces(); // 32 pieces의 chess pieces 생성
+        PositionAllPieces(); // chess pieces의 올바른 positioning
     }
     private void Update()
     {
@@ -68,16 +78,15 @@ public class Chessboard : MonoBehaviour
     }
 
     // Generate the board
-    private void GenerateAllTiles(float tileSize, int tileCountX, int tileCountY) // generate floor
+    private void GenerateAllTiles(float tileSize, int tileCountX, int tileCountY) // hover 시 tile 표시
     {
-        // 주석 필요 !!
-        yOffset += transform.position.y;
+        yOffset += transform.position.y; // chess board asset 위에 tile 깔기
         bounds = new Vector3((tileCountX / 2) * tileSize, 0, (tileCountX / 2) * tileSize) + boardCenter;
 
-        tiles = new GameObject[tileCountX, tileCountY]; // 2차원 array 초기화
-        for (int x = 0; x < tileCountX; x++)
-            for (int y = 0; y < tileCountY; y++)
-                tiles[x, y] = GenerateSingleTile(tileSize, x, y); // 각 tile 생성
+        tiles = new GameObject[tileCountX, tileCountY]; // 2차원 array 초기화 (chess board)
+        for (int i = 0; i < tileCountX; i++)
+            for (int j = 0; j < tileCountY; j++)
+                tiles[i, j] = GenerateSingleTile(tileSize, i, j); // 각 tile 생성
     }
     private GameObject GenerateSingleTile(float tileSize, int x, int y)
     {
@@ -91,7 +100,7 @@ public class Chessboard : MonoBehaviour
         tileObject.AddComponent<MeshRenderer>().material = tileMaterial;
 
         Vector3[] vertices = new Vector3[4];
-        vertices[0] = new Vector3(x * tileSize, yOffset, y * tileSize) - bounds; // 가로, 높이, 세로( - bounds 주석 필요 !!)
+        vertices[0] = new Vector3(x * tileSize, yOffset, y * tileSize) - bounds; // 가로, 높이, 세로
         vertices[1] = new Vector3(x * tileSize, yOffset, (y + 1) * tileSize) - bounds;
         vertices[2] = new Vector3((x + 1) * tileSize, yOffset, y * tileSize) - bounds;
         vertices[3] = new Vector3((x + 1) * tileSize, yOffset, (y + 1) * tileSize) - bounds;
@@ -107,6 +116,68 @@ public class Chessboard : MonoBehaviour
         tileObject.AddComponent<BoxCollider>(); // Collider for Raycast (각 tile의 경계선 생성)
 
         return tileObject; // 각 tile 반환
+    }
+
+    // Spawning of the pieces (말 소환)
+    private void SpawnAllPieces()
+    {
+        chessPieces = new ChessPiece[TILE_COUNT_X, TILE_COUNT_Y]; // chess 말 넣을 2차원 array
+        
+        int whiteTeam = 0, blackTeam = 1;
+
+        // white team
+        chessPieces[0, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
+        chessPieces[1, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
+        chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
+        chessPieces[3, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
+        chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.Queen, whiteTeam);
+        chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
+        chessPieces[6, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
+        chessPieces[7, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
+        for (int i = 0; i < TILE_COUNT_X; i++)
+            chessPieces[i, 1] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
+
+        // black team
+        chessPieces[0, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
+        chessPieces[1, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
+        chessPieces[2, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
+        chessPieces[3, 7] = SpawnSinglePiece(ChessPieceType.Queen, blackTeam);
+        chessPieces[4, 7] = SpawnSinglePiece(ChessPieceType.King, blackTeam);
+        chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
+        chessPieces[6, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
+        chessPieces[7, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
+        for (int i = 0; i < TILE_COUNT_X; i++)
+            chessPieces[i, 6] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
+    }
+    private ChessPiece SpawnSinglePiece(ChessPieceType type, int team)
+    {
+        ChessPiece cp = Instantiate(prefabs[(int)type - 1], transform).GetComponent<ChessPiece>(); // prefabs array의 {enum인 type - 1}을 instance화 해서 transform의 자식 객체로 생성
+        
+        // ChessPieceType = "Rook" (type = 1) -> (prefabs[(int)type - 1]  = Rook) -> instance화 (객체 생성)
+        cp.type = type; // 해당 객체 = "Rook" 임을 명시
+        cp.team = team; // black or white team
+        cp.GetComponent<MeshRenderer>().material = teamMaterials[team]; // material 색상 입히기
+
+        return cp;
+    }
+
+    // Positioning
+    private void PositionAllPieces()
+    {
+        for (int x = 0; x < TILE_COUNT_X; x++)
+            for (int y = 0; y < TILE_COUNT_Y; y++)
+                if (chessPieces[x, y] != null)
+                    PositionSinglePiece(x, y, true); // moving 구현 X : game start에서는 각 말의 즉시 positioning을 위해 'force = true'
+    }
+    private void PositionSinglePiece(int x, int y, bool force = false)
+    {
+        chessPieces[x, y].currentX = x;
+        chessPieces[x, y].currentY = y;
+        chessPieces[x, y].transform.position = GetTileCenter(x, y); // 위치 적절히 조정
+    }
+    private Vector3 GetTileCenter(int x, int y)
+    {
+        return new Vector3(x * tileSize, yOffset, y * tileSize) - bounds + new Vector3((tileSize / 2), 0, (tileSize / 2));
     }
 
     // Operations

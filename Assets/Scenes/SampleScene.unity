@@ -386,13 +386,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.3535534, y: -0.61237246, z: 0.3535534, w: 0.61237246}
-  m_LocalPosition: {x: 5.37, y: 7.2, z: 0}
+  m_LocalRotation: {x: 0.5, y: 0, z: 0, w: 0.8660254}
+  m_LocalPosition: {x: 0, y: 7.2, z: -5.37}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 60, y: -90, z: 0}
+  m_LocalEulerAnglesHint: {x: 60, y: 0, z: 0}
 --- !u!114 &963194229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -458,6 +458,16 @@ MonoBehaviour:
   tileSize: 1
   yOffset: 0.01
   boardCenter: {x: 0, y: 0, z: 0}
+  prefabs:
+  - {fileID: 9162628107293567065, guid: 246372d0421b3df41b44863acc9272b3, type: 3}
+  - {fileID: 7241087607627658425, guid: 1d3b2cd7fa09d3e4d8389b12329ed19f, type: 3}
+  - {fileID: 4883233112828928256, guid: 33a34cb8af489044fa10a42fdc50952f, type: 3}
+  - {fileID: 7281473540609936282, guid: b7289f43a29312e498ea3de35a11dc1e, type: 3}
+  - {fileID: 6986286399747219658, guid: 769d25900c2537a4eb6c7661fd476b8d, type: 3}
+  - {fileID: 5261425280390353290, guid: 02cf787e156eba348af22c89b91ae6b4, type: 3}
+  teamMaterials:
+  - {fileID: 2100000, guid: 819e8532c0a99e344b494c07cb65be08, type: 2}
+  - {fileID: 2100000, guid: 836b000ced4edc64cb9bf849230d7960, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
