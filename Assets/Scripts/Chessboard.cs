@@ -16,6 +16,7 @@ public class Chessboard : MonoBehaviour
     [SerializeField] private float deathSize = 0.6f;
     [SerializeField] private float deathSpacing = 0.5f;
     [SerializeField] private float floatSpacing = 0.1f;
+    [SerializeField] private float dragOffset = 1.0f;
 
     [Header("Prefabs && Materials")] // array - prefabs & materials
     [SerializeField] private GameObject[] prefabs;
@@ -114,6 +115,14 @@ public class Chessboard : MonoBehaviour
                 currentlyDragging.SetPosition(GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY), false); // 위치 원상 복구
                 currentlyDragging = null; // click chess 말 해제
             }
+        }
+
+        if (currentlyDragging) // dragging 시 chess 말 이동 animation 구현
+        {
+            Plane horizontalPlane = new Plane(Vector3.up, Vector3.up * yOffset); // chess 말 따라가는 invisible plane 생성
+            float distance = 0.0f; // 마우스 위치 ~ plane 까지 거리 저장
+            if (horizontalPlane.Raycast(ray, out distance))
+                currentlyDragging.SetPosition(ray.GetPoint(distance) + Vector3.up * dragOffset, false); // chess말 position 변동 (smooth 이동 구현), 다른 말과 겹치지 않게 y값 변동
         }
     }
 
@@ -245,13 +254,21 @@ public class Chessboard : MonoBehaviour
             {
                 deadWhites.Add(ocp);
                 ocp.SetScale(Vector3.one * deathSize, false); // 죽은 말 크기 조정
-                ocp.SetPosition(new Vector3(8 * tileSize + 0.05f, yOffset + floatSpacing, -0.5f * tileSize) - bounds + new Vector3(tileSize / 2, 0, tileSize / 2) + (Vector3.forward * deathSpacing) * deadWhites.Count, false); // 죽은 말 사이드에 열거
+                ocp.SetPosition(
+                    new Vector3(8 * tileSize + 0.05f, yOffset + floatSpacing, -0.5f * tileSize)
+                    - bounds
+                    + new Vector3(tileSize / 2, 0, tileSize / 2)
+                    + (Vector3.forward * deathSpacing) * deadWhites.Count, false); // 죽은 말 사이드에 열거
             }
             else // ocp == black team
             {
                 deadBlacks.Add(ocp);
                 ocp.SetScale(Vector3.one * deathSize, false);
-                ocp.SetPosition(new Vector3(-8 * tileSize - 1.05f, yOffset + floatSpacing, -0.5f * tileSize) + bounds + new Vector3(tileSize / 2, 0, tileSize / 2) + (Vector3.back * deathSpacing) * deadBlacks.Count, false);
+                ocp.SetPosition(
+                    new Vector3(-8 * tileSize - 1.05f, yOffset + floatSpacing, -0.5f * tileSize)
+                    + bounds
+                    + new Vector3(tileSize / 2, 0, tileSize / 2)
+                    + (Vector3.back * deathSpacing) * deadBlacks.Count, false);
             }
         }
 
