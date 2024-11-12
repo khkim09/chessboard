@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 968b316d4f3819748bce734adbdda255, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -458,6 +458,9 @@ MonoBehaviour:
   tileSize: 1
   yOffset: 0.01
   boardCenter: {x: 0, y: 0, z: 0}
+  deathSize: 0.6
+  deathSpacing: 0.5
+  floatSpacing: 0.1
   prefabs:
   - {fileID: 9162628107293567065, guid: 246372d0421b3df41b44863acc9272b3, type: 3}
   - {fileID: 7241087607627658425, guid: 1d3b2cd7fa09d3e4d8389b12329ed19f, type: 3}
