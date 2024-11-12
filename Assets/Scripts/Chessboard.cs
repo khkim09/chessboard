@@ -207,6 +207,9 @@ public class Chessboard : MonoBehaviour
         cp.team = team; // black or white team
         cp.GetComponent<MeshRenderer>().material = teamMaterials[team]; // material 색상 입히기
 
+        if (cp.type == ChessPieceType.Knight && cp.team == 1) // black knight 정면 바라보도록 rotation 수행
+            cp.GetComponent<Transform>().rotation = Quaternion.Euler(0, 180, 0);
+
         return cp;
     }
 
