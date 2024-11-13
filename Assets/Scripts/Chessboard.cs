@@ -27,6 +27,7 @@ public class Chessboard : MonoBehaviour
     private ChessPiece currentlyDragging; // 지금 선택한 말
     private List<ChessPiece> deadWhites = new List<ChessPiece>();
     private List<ChessPiece> deadBlacks = new List<ChessPiece>();
+    private List<Vector2Int> availableMoves = new List<Vector2Int>(); // 이동 가능한 위치 표기할 array
 
     private const int TILE_COUNT_X = 8;
     private const int TILE_COUNT_Y = 8;
@@ -78,11 +79,15 @@ public class Chessboard : MonoBehaviour
             // click한 chess 말 drag에 대한 작업
             if (Input.GetMouseButtonDown(0)) // left button 클릭
             {
-                if (chessPieces[hitPosition.x, hitPosition.y] != null)
+                if (chessPieces[hitPosition.x, hitPosition.y] != null) // 클릭한 위치에 chessPiece 존재
                 {
                     if (true) // my turn ?
                     {
                         currentlyDragging = chessPieces[hitPosition.x, hitPosition.y]; // 현재 클릭 한 chess 말 저장
+
+                        // 이동 가능한 위치 표시 (higlight)
+                        availableMoves = currentlyDragging.GetAvailableMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y);
+                        HighlightTiles();
                     }
                 }
             }
@@ -97,6 +102,7 @@ public class Chessboard : MonoBehaviour
                     if (!validMove) // 이동 불가 (같은 team 말이 already exists)
                         currentlyDragging.SetPosition(GetTileCenter(previousPosition.x, previousPosition.y), false); // 위치 원상 복구
 
+                    RemoveHighlightTiles(); // highlight 제거
                     currentlyDragging = null; // click 한 chess 말 해제
                 }
             
@@ -104,16 +110,17 @@ public class Chessboard : MonoBehaviour
         else // "Tile", "Hover" 객체와 충돌 X (board 아닌 곳 hover 하는 중)
         {
             // tile -> background
-            if (currentHover != -Vector2Int.one) // tile layer 작업
+            if (currentHover != -Vector2Int.one) // tile 작업 - chess board에서 벗어난 곳으로 hover 시
             {
                 tiles[currentHover.x, currentHover.y].layer = LayerMask.NameToLayer("Tile"); // "Hover" -> "Tile"로 layer로 복구
                 currentHover = -Vector2Int.one; // tile 밖이므로 위치 정보 (-1, -1) 저장
             }
 
-            if (currentlyDragging && Input.GetMouseButtonUp(0)) // chess 말 작업
+            if (currentlyDragging && Input.GetMouseButtonUp(0)) // chess 말 작업 - chess board에서 벗어난 곳으로 drag 시
             {
                 currentlyDragging.SetPosition(GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY), false); // 위치 원상 복구
                 currentlyDragging = null; // click chess 말 해제
+                RemoveHighlightTiles();
             }
         }
 
@@ -230,6 +237,19 @@ public class Chessboard : MonoBehaviour
     private Vector3 GetTileCenter(int x, int y)
     {
         return new Vector3(x * tileSize, yOffset, y * tileSize) - bounds + new Vector3((tileSize / 2), 0, (tileSize / 2));
+    }
+
+    // Highlight Tiles (이동 가능 위치 highlight)
+    private void HighlightTiles()
+    {
+        for (int i = 0; i < availableMoves.Count; i++)
+            tiles[availableMoves[i].x, availableMoves[i].y].layer = LayerMask.NameToLayer("Highlight");
+    }
+    private void RemoveHighlightTiles() // Highlight 제거
+    {
+        for (int i = 0; i < availableMoves.Count; i++)
+            tiles[availableMoves[i].x, availableMoves[i].y].layer = LayerMask.NameToLayer("Tiles");
+        availableMoves.Clear();
     }
 
     // Operations

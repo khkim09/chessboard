@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 
 public enum ChessPieceType
@@ -27,6 +29,17 @@ public class ChessPiece : MonoBehaviour
     {
         transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * 10);
         transform.localScale = Vector3.Lerp(transform.localScale, desiredScale, Time.deltaTime * 10);
+    }
+
+    public List<Vector2Int> GetAvailableMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+    {
+        List<Vector2Int> l = new List<Vector2Int>();
+
+        l.Add(new Vector2Int(3, 3));
+        l.Add(new Vector2Int(3, 4));
+        l.Add(new Vector2Int(1,2));
+
+        return l;
     }
 
     public virtual void SetPosition(Vector3 position, bool force)
