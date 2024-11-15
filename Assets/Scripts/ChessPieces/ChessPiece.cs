@@ -35,10 +35,6 @@ public class ChessPiece : MonoBehaviour
     {
         List<Vector2Int> l = new List<Vector2Int>();
 
-        l.Add(new Vector2Int(3, 3));
-        l.Add(new Vector2Int(3, 4));
-        l.Add(new Vector2Int(1,2));
-
         return l;
     }
 
