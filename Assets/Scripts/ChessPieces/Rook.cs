@@ -10,7 +10,7 @@ public class Rook : ChessPiece
         int minAvailableX = 0, maxAvailableX = 7;
         int minAvailableY = 0, maxAvailableY = 7;
 
-        // vertical move
+        // horizontal move
         for (int i = 0; i < currentX; i++) // 현재 위치 기준 구간 나눠서
             if (board[i, currentY] != null)
                 if (i >= minAvailableX)
@@ -31,7 +31,7 @@ public class Rook : ChessPiece
                         maxAvailableX = i;
                 }
 
-        // horizontal move
+        // vertical move
         for (int j = 0; j < currentY; j++) // 현재 위치 기준 구간 나눠서
             if (board[currentX, j] != null)
                 if (j >= minAvailableY)
