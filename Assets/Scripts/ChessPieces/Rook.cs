@@ -11,11 +11,11 @@ public class Rook : ChessPiece
         int minAvailableY = 0, maxAvailableY = 7;
 
         // vertical move
-        for (int i = 0; i < currentX; i++)
+        for (int i = 0; i < currentX; i++) // 현재 위치 기준 구간 나눠서
             if (board[i, currentY] != null)
                 if (i >= minAvailableX)
                 {
-                    if (board[i, currentY].team == board[currentX, currentY].team)
+                    if (board[i, currentY].team == board[currentX, currentY].team) // 같은 team으로 막혀 있으면 해당 tile 제외 (i + 1)
                         minAvailableX = i + 1;
                     else
                         minAvailableX = i;
@@ -32,7 +32,7 @@ public class Rook : ChessPiece
                 }
 
         // horizontal move
-        for (int j = 0; j < currentY; j++)
+        for (int j = 0; j < currentY; j++) // 현재 위치 기준 구간 나눠서
             if (board[currentX, j] != null)
                 if (j >= minAvailableY)
                 {

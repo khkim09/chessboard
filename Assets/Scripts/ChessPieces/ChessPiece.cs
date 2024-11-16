@@ -13,8 +13,6 @@ public enum ChessPieceType
     King = 6
 }
 
-
-
 public class ChessPiece : MonoBehaviour
 {
     public int team; // 색 구분 (white = 0, black = 1)

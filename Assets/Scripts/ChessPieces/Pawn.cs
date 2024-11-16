@@ -13,8 +13,18 @@ public class Pawn : ChessPiece
         // pawn simple move
         if (team == 0) // white pawn의 첫 움직임 (1, 2칸 전진 중 선택)
         {
-            if (currentY == 7) // change piece animation
+            if (currentY == 7) // change piece animation - 구현 필요
+            {
+                /*
+                Chessboard chessboard = FindObjectOfType<Chessboard>();
+                if (chessboard != null)
+                {
+                    ChessPiece cp = chessboard.deadWhites[0];
+                    
+                }
+                */
                 return l;
+            }
 
             if (board[currentX, currentY + direction] == null)
                 l.Add(new Vector2Int(currentX, currentY + direction));
@@ -26,8 +36,10 @@ public class Pawn : ChessPiece
         }
         else // black pawn 동일
         {
-            if (currentY == 0) // change piece animation
+            if (currentY == 0) // change piece animation - 구현 필요
+            {
                 return l;
+            }
 
             if (board[currentX, currentY + direction] == null)
                 l.Add(new Vector2Int(currentX, currentY + direction));

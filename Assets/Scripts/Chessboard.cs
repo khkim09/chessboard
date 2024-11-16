@@ -26,8 +26,8 @@ public class Chessboard : MonoBehaviour
     // LOGIC
     private ChessPiece[,] chessPieces; // 2차원 array (chess board 전체 위의 chess 말 position)
     private ChessPiece currentlyDragging; // 지금 선택한 말
-    private List<ChessPiece> deadWhites = new List<ChessPiece>();
-    private List<ChessPiece> deadBlacks = new List<ChessPiece>();
+    public List<ChessPiece> deadWhites = new List<ChessPiece>();
+    public List<ChessPiece> deadBlacks = new List<ChessPiece>();
     private List<Vector2Int> availableMoves = new List<Vector2Int>(); // 이동 가능한 위치 표기할 array
 
     private const int TILE_COUNT_X = 8;
@@ -37,6 +37,8 @@ public class Chessboard : MonoBehaviour
     private Camera currentCamera; // 카메라
     private Vector2Int currentHover; // 매 frame update 전 마우스 위치 (60fps 기준 A -> B, currentHover = A, hitPosition = B)
     private Vector3 bounds;
+
+
 
     private void Awake() // game start 시 setting 사항
     {
@@ -263,7 +265,7 @@ public class Chessboard : MonoBehaviour
         
         Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY); // currentX, Y = 이동 전 위치
 
-        if (chessPieces[x, y] != null) // 이동할 위치에 chess 말이 있을 경우 (같은 team)
+        if (chessPieces[x, y] != null) // 이동할 위치에 chess 말이 있을 경우
         {
             ChessPiece ocp = chessPieces[x, y]; // already exists chess 말
 
