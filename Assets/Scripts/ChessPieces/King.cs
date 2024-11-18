@@ -14,7 +14,7 @@ public class King : ChessPiece
     {
         List<Vector2Int> l = new List<Vector2Int>();
 
-        List<Vector2Int> availableCase = new List<Vector2Int>();
+        List<Vector2Int> availableCase = new List<Vector2Int>(); // 이동 가능 case (8 방향 - 단 칸)
         availableCase.Add(new Vector2Int(currentX - 1, currentY + 1));
         availableCase.Add(new Vector2Int(currentX, currentY + 1));
         availableCase.Add(new Vector2Int(currentX + 1, currentY + 1));
@@ -24,13 +24,19 @@ public class King : ChessPiece
         availableCase.Add(new Vector2Int(currentX - 1, currentY - 1));
         availableCase.Add(new Vector2Int(currentX - 1, currentY));
 
-        if (isValidMove(new Vector2Int(currentX - 1, currentY + 1)))
-
-        switch()
+        for (int i = 0; i < availableCase.Count; i++)
         {
-            case 1: 
+            if (isValidMove(availableCase[i]))
+            {
+                if (board[availableCase[i].x, availableCase[i].y] == null)
+                    l.Add(new Vector2Int(availableCase[i].x, availableCase[i].y));
+                else
+                    if (board[availableCase[i].x, availableCase[i].y].team != board[currentX, currentY].team)
+                        l.Add(new Vector2Int(availableCase[i].x, availableCase[i].y));
+            }
         }
 
+        
         return l;
     }
 }
