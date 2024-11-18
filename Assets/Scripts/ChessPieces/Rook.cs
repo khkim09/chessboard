@@ -53,9 +53,17 @@ public class Rook : ChessPiece
                 }
 
         for (int i = minAvailableX; i <= maxAvailableX; i++)
+        {
+            if (i == currentX)
+                continue;
             l.Add(new Vector2Int(i, currentY));
+        }
         for (int j = minAvailableY; j <= maxAvailableY; j++)
+        {
+            if (j == currentY)
+                continue;
             l.Add(new Vector2Int(currentX, j));
+        }
 
         return l;
     }

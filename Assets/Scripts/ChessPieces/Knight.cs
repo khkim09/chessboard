@@ -27,7 +27,7 @@ public class Knight : ChessPiece
         availableCase.Add(new Vector2Int(currentX - 1, currentY - 2));
         availableCase.Add(new Vector2Int(currentX - 2, currentY - 1));
 
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < availableCase.Count; i++)
             if (isValidMove(availableCase[i])) // 8개 이동 가능 case 검사
             {
                 if (board[availableCase[i].x, availableCase[i].y] == null) // 이동하려는 위치에 chess 말 X (이동)
