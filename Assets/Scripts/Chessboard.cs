@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -18,6 +19,7 @@ public class Chessboard : MonoBehaviour
     [SerializeField] private float floatSpacing = 0.1f;
     [SerializeField] private float dragOffset = 1.0f;
     [SerializeField] private bool islifting = false;
+    [SerializeField] private GameObject victoryScreen;
 
     [Header("Prefabs && Materials")] // array - prefabs & materials
     [SerializeField] private GameObject[] prefabs;
@@ -37,12 +39,15 @@ public class Chessboard : MonoBehaviour
     private Camera currentCamera; // 카메라
     private Vector2Int currentHover; // 매 frame update 전 마우스 위치 (60fps 기준 A -> B, currentHover = A, hitPosition = B)
     private Vector3 bounds;
+    private bool isWhiteTurn;
 
 
 
     private void Awake() // game start 시 setting 사항
     {
         transform.position = new Vector3(-3.5f, 0, -3.5f); // 게임 시작과 동시에 chess board 위치 알맞게 수정
+
+        isWhiteTurn = true;
         
         GenerateAllTiles(tileSize, TILE_COUNT_X, TILE_COUNT_Y); // 8 x 8 chess board 생성 (GenereateAllTiles 호출)
         SpawnAllPieces(); // 32 pieces의 chess pieces 생성
@@ -86,7 +91,7 @@ public class Chessboard : MonoBehaviour
                 // 첫번째 클릭에 관한 작업 (chess 말 선택)
                 if (chessPieces[hitPosition.x, hitPosition.y] != null && !islifting) // 클릭한 위치에 chessPiece 존재 && chessPiece lifting X (none chosen chessPiece)
                 {
-                    if (true) // my turn ?
+                    if ((chessPieces[hitPosition.x, hitPosition.y].team == 0 && isWhiteTurn) || (chessPieces[hitPosition.x, hitPosition.y].team == 1 && !isWhiteTurn)) // check turn
                     {
                         currentlyDragging = chessPieces[hitPosition.x, hitPosition.y]; // 현재 클릭 한 chess 말 저장
 
@@ -186,9 +191,11 @@ public class Chessboard : MonoBehaviour
         chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
         chessPieces[6, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
         chessPieces[7, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
+        /*
         for (int i = 0; i < TILE_COUNT_X; i++)
             chessPieces[i, 1] = SpawnSinglePiece(ChessPieceType.Pawn, whiteTeam);
-
+        */
+        
         // black team
         chessPieces[0, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
         chessPieces[1, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
@@ -198,8 +205,10 @@ public class Chessboard : MonoBehaviour
         chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
         chessPieces[6, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
         chessPieces[7, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
+        /*
         for (int i = 0; i < TILE_COUNT_X; i++)
             chessPieces[i, 6] = SpawnSinglePiece(ChessPieceType.Pawn, blackTeam);
+        */
     }
     private ChessPiece SpawnSinglePiece(ChessPieceType type, int team)
     {
@@ -248,6 +257,58 @@ public class Chessboard : MonoBehaviour
         availableMoves.Clear();
     }
 
+    // CheckMate (Win)
+    private void CheckMate(int team)
+    {
+        DisplayVictory(team);
+    }
+    private void DisplayVictory(int winningTeam)
+    {
+        victoryScreen.SetActive(true);
+        victoryScreen.transform.GetChild(winningTeam).gameObject.SetActive(true);
+    }
+    public void OnResetButton()
+    {
+        // UI - 승리 text mesh 모두 비활성화
+        victoryScreen.transform.GetChild(0).gameObject.SetActive(false);
+        victoryScreen.transform.GetChild(1).gameObject.SetActive(false);
+        victoryScreen.SetActive(false);
+
+        // Field reset - chessPiece 관련 선택 해제
+        currentlyDragging = null;
+        availableMoves = new List<Vector2Int>();
+
+        // Clean up - 모두 없애고
+        for (int i = 0; i < TILE_COUNT_X; i++)
+        {
+            for (int j = 0; j < TILE_COUNT_Y; j++)
+            {
+                if (chessPieces[i, j] != null)
+                    Destroy(chessPieces[i, j].gameObject);
+                
+                chessPieces[i, j] = null;
+            }
+        }
+
+        // dead piece도 모두 삭제
+        for (int i = 0; i < deadWhites.Count; i++)
+            Destroy(deadWhites[i].gameObject);
+        for (int i = 0; i < deadBlacks.Count; i++)
+            Destroy(deadBlacks[i].gameObject);
+        
+        deadWhites.Clear();
+        deadBlacks.Clear();
+
+        // chess piece 전체 다시 세팅
+        SpawnAllPieces();
+        PositionAllPieces();
+        isWhiteTurn = true; // always white first
+    }
+    public void OnExitButton()
+    {
+        Application.Quit();
+    }
+
     // Operations
     private Vector2Int LookUpTileIndex(GameObject hitInfo)
     {
@@ -274,6 +335,9 @@ public class Chessboard : MonoBehaviour
             
             if (ocp.team == 0) // ocp == white team
             {
+                if (ocp.type == ChessPieceType.King) // king 잡으면 게임 끝
+                    CheckMate(1);
+
                 deadWhites.Add(ocp);
                 ocp.SetScale(Vector3.one * deathSize, false); // 죽은 말 크기 조정
                 ocp.SetPosition(
@@ -284,6 +348,9 @@ public class Chessboard : MonoBehaviour
             }
             else // ocp == black team
             {
+                if (ocp.type == ChessPieceType.King)
+                    CheckMate(0);
+
                 deadBlacks.Add(ocp);
                 ocp.SetScale(Vector3.one * deathSize, false);
                 ocp.SetPosition(
@@ -298,6 +365,8 @@ public class Chessboard : MonoBehaviour
         chessPieces[previousPosition.x, previousPosition.y] = null; // 이동 전 위치 정보 삭제
 
         PositionSinglePiece(x, y, false); // chess 말 이동 (smooth operation : force = false)
+
+        isWhiteTurn = !isWhiteTurn; // turn 순환 (white -> black -> white -> black)
 
         return true;
     }
