@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 167148624}
   - component: {fileID: 167148623}
   m_Layer: 5
-  m_Name: ResetButton
+  m_Name: Reset
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -354,7 +354,7 @@ Light:
     m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
-    m_Strength: 1
+    m_Strength: 0.25
     m_Bias: 0.05
     m_NormalBias: 0.4
     m_NearPlane: 0.2
@@ -580,7 +580,7 @@ GameObject:
   - component: {fileID: 763664822}
   - component: {fileID: 763664821}
   m_Layer: 5
-  m_Name: ExitButton
+  m_Name: Exit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1139,7 +1139,7 @@ MonoBehaviour:
   floatSpacing: 0.1
   dragOffset: 1
   islifting: 0
-  victoryScreen: {fileID: 0}
+  victoryScreen: {fileID: 1627806091}
   prefabs:
   - {fileID: 9162628107293567065, guid: 246372d0421b3df41b44863acc9272b3, type: 3}
   - {fileID: 7241087607627658425, guid: 1d3b2cd7fa09d3e4d8389b12329ed19f, type: 3}
@@ -1561,5 +1561,5 @@ SceneRoots:
   - {fileID: 963194228}
   - {fileID: 705507995}
   - {fileID: 400890469}
-  - {fileID: 1467245621}
   - {fileID: 1586789469}
+  - {fileID: 1467245621}

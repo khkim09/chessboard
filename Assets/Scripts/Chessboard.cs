@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using TMPro;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -303,6 +304,7 @@ public class Chessboard : MonoBehaviour
     public void OnExitButton()
     {
         Application.Quit();
+        EditorApplication.isPlaying = false;
     }
 
     // Operations
