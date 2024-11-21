@@ -67,4 +67,13 @@ public class Rook : ChessPiece
 
         return l;
     }
+
+    public override SpecialMove GetSpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int[]> moveList, ref List<Vector2Int> availableMoves)
+    {
+        SpecialMove sp = SpecialMove.None;
+
+        
+
+        return sp;
+    }
 }

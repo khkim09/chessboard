@@ -51,7 +51,7 @@ public class Chessboard : MonoBehaviour
     private Vector3 bounds;
     private bool isWhiteTurn;
 
-    private SpecialMove specialMove; // rook <-> king swap 같은 special move
+    private SpecialMove specialMove; // rook <-> king swap (castling) 같은 special move
     private List<Vector2Int[]> moveList = new List<Vector2Int[]>();
 
 
@@ -111,10 +111,8 @@ public class Chessboard : MonoBehaviour
                         // 이동 가능 위치 list에 저장
                         availableMoves = currentlyDragging.GetAvailableMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y);
                         
-                        /*
                         // special move 가능한 위치 list에 저장
                         specialMove = currentlyDragging.GetSpecialMoves(ref chessPieces, ref moveList, ref availableMoves);
-                        */
 
                         HighlightTiles(); // highlight
                         islifting = liftingPiece(); // chessPiece lifting (islifting = true로 변경)
@@ -206,8 +204,8 @@ public class Chessboard : MonoBehaviour
         chessPieces[0, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
         chessPieces[1, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
         chessPieces[2, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
-        chessPieces[3, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
-        chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.Queen, whiteTeam);
+        chessPieces[3, 0] = SpawnSinglePiece(ChessPieceType.Queen, whiteTeam);
+        chessPieces[4, 0] = SpawnSinglePiece(ChessPieceType.King, whiteTeam);
         chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
         chessPieces[6, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
         chessPieces[7, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);

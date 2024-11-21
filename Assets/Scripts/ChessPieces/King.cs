@@ -35,8 +35,18 @@ public class King : ChessPiece
                         l.Add(new Vector2Int(availableCase[i].x, availableCase[i].y));
             }
         }
-
         
         return l;
+    }
+
+    public override SpecialMove GetSpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int[]> moveList, ref List<Vector2Int> availableMoves)
+    {
+        SpecialMove sp = SpecialMove.None;
+
+        var kingMove = moveList.Find(m => m[0].x == 4 && m[0].y == ((team == 0) ? 0 : 7));
+
+
+
+        return sp;
     }
 }
