@@ -29,6 +29,7 @@ public class Chessboard : MonoBehaviour
     [SerializeField] private float dragOffset = 1.0f;
     [SerializeField] private bool islifting = false;
     [SerializeField] private GameObject victoryScreen;
+    [SerializeField] private GameObject choosePieceScreen;
 
     [Header("Prefabs && Materials")] // array - prefabs & materials
     [SerializeField] private GameObject[] prefabs;
@@ -341,15 +342,38 @@ public class Chessboard : MonoBehaviour
         EditorApplication.isPlaying = false; // unity editor도 play 종료
     }
 
+    // Choosing chessPiece type for promotion
+    private void ChoosePromotionChessType()
+    {
+        choosePieceScreen.SetActive(true);
+    }
+    public void OnRookButton()
+    {
+        
+    }
+    public void OnKnightButton()
+    {
+
+    }
+    public void OnBishopButton()
+    {
+
+    }
+    public void OnQueenButton()
+    {
+
+    }
+
     // Special Moves
     private void ProcessSpecialMove()
     {
+        // castling - king <-> rook switch 변환
         if (specialMove == SpecialMove.Castling)
         {
-            Vector2Int[] lastMove = moveList[moveList.Count - 1];
+            Vector2Int[] lastMove = moveList[moveList.Count - 1]; // king의 마지막 move (이동 전, 이동 후)쌍 확인
 
             // left rook (left castling)
-            if (lastMove[1].x == 2)
+            if (lastMove[1].x == 2) // castling 수행 후 king x좌표 == 2
             {
                 // white castling
                 if (lastMove[1].y == 0)
@@ -391,9 +415,20 @@ public class Chessboard : MonoBehaviour
             }
 
         }
-        else if (specialMove == SpecialMove.Promotion)
+        
+        // promotion - (pawn -> ?) 변환
+        if (specialMove == SpecialMove.Promotion)
         {
+            Vector2Int[] lastMove = moveList[moveList.Count - 1]; // promotion 수행한 pawn의 마지막 move
+            ChessPiece readyPawn = chessPieces[lastMove[1].x, lastMove[1].y]; // promotion 진행할 pawn - 이동 후 좌표 (chess board의 최상단 or 최하단)
 
+            if (readyPawn.type == ChessPieceType.Pawn)
+            {
+                if (readyPawn.team == 0 && lastMove[1].y == 7)
+                {
+                    ChoosePromotionChessType();
+                }
+            }
         }
     }
 

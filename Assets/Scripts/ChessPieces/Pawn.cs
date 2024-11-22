@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -13,21 +14,9 @@ public class Pawn : ChessPiece
         // pawn simple move
         if (team == 0) // white pawn의 첫 움직임 (1, 2칸 전진 중 선택)
         {
-            if (currentY == 7) // change piece animation - 구현 필요
-            {
-                /*
-                Chessboard chessboard = FindObjectOfType<Chessboard>();
-                if (chessboard != null)
-                {
-                    ChessPiece cp = chessboard.deadWhites[0];
-                    
-                }
-                */
-                return l;
-            }
-
             if (board[currentX, currentY + direction] == null)
-                l.Add(new Vector2Int(currentX, currentY + direction));
+                if (!(currentY == 6))
+                    l.Add(new Vector2Int(currentX, currentY + direction));
 
             if (currentY == 1)
                 if (board[currentX, currentY + direction * 2] == null)
@@ -36,13 +25,9 @@ public class Pawn : ChessPiece
         }
         else // black pawn 동일
         {
-            if (currentY == 0) // change piece animation - 구현 필요
-            {
-                return l;
-            }
-
             if (board[currentX, currentY + direction] == null)
-                l.Add(new Vector2Int(currentX, currentY + direction));
+                if (!(currentY == 1))
+                    l.Add(new Vector2Int(currentX, currentY + direction));
 
             if (currentY == 6)
                 if (board[currentX, currentY + direction * 2] == null)
@@ -74,5 +59,21 @@ public class Pawn : ChessPiece
         }
         
         return l;
+    }
+
+    public override SpecialMove GetSpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int[]> moveList, ref List<Vector2Int> specialMoves)
+    {
+        SpecialMove sp = SpecialMove.None;
+
+        int direction = (team == 0) ? 1 : -1;
+
+        if ((team == 0 && currentY == 6) || (team == 1 && currentY == 1))
+        {
+            if (board[currentX, currentY + direction] == null)
+                specialMoves.Add(new Vector2Int(currentX, currentY + direction));
+            return SpecialMove.Promotion;
+        }
+        
+        return sp;
     }
 }
