@@ -12,7 +12,6 @@ using UnityEngine.UIElements;
 public enum SpecialMove
 {
     None = 0,
-    EnPassant,
     Castling,
     Promotion
 }
@@ -41,6 +40,7 @@ public class Chessboard : MonoBehaviour
     public List<ChessPiece> deadWhites = new List<ChessPiece>();
     public List<ChessPiece> deadBlacks = new List<ChessPiece>();
     private List<Vector2Int> availableMoves = new List<Vector2Int>(); // 이동 가능한 위치 표기할 array
+    private List<Vector2Int> specialMoves = new List<Vector2Int>(); // 이동 가능한 special move array
 
     private const int TILE_COUNT_X = 8;
     private const int TILE_COUNT_Y = 8;
@@ -52,7 +52,7 @@ public class Chessboard : MonoBehaviour
     private bool isWhiteTurn;
 
     private SpecialMove specialMove; // rook <-> king swap (castling) 같은 special move
-    private List<Vector2Int[]> moveList = new List<Vector2Int[]>();
+    private List<Vector2Int[]> moveList = new List<Vector2Int[]>(); // 여태 이동한 chess move 모두 저장 : (이동 전 위치 vector2Int, 이동 후 위치 vector2Int) 쌍
 
 
 
@@ -77,7 +77,7 @@ public class Chessboard : MonoBehaviour
         // tile에 마우스 올려 놓을 시(hover) 해당 tile 표시되도록 하는 과정
         RaycastHit info; // raycast가 충돌한 정보 저장
         Ray ray = currentCamera.ScreenPointToRay(Input.mousePosition); // 마우스 위치에서 화면 상 좌표를 3D로 변환하는 ray 생성
-        if (Physics.Raycast(ray, out info, 100, LayerMask.GetMask("Tile", "Hover", "Highlight", "Insight"))) // "Tile", "Hover", "Highlight" 객체와 충돌하는지 검사 (충돌 시 info에 해당 tile 저장, 검사 거리 100)
+        if (Physics.Raycast(ray, out info, 100, LayerMask.GetMask("Tile", "Hover", "Highlight", "Insight", "Special"))) // tile layer 객체와 충돌하는지 검사 (충돌 시 info에 해당 tile 저장, 검사 거리 100)
         {
             // 충돌한 객체의 index 받아서 위치정보 저장
             Vector2Int hitPosition = LookUpTileIndex(info.transform.gameObject); // hitPosition = 새로운 frame에서 update된 현 마우스 위치
@@ -93,7 +93,7 @@ public class Chessboard : MonoBehaviour
             if (currentHover != hitPosition) // hovering tile A -> tile B (tile 변경)
             {
                 // 기존 "Highlight" or "Tile" layer로 각각 복구
-                tiles[currentHover.x, currentHover.y].layer = ReturnToOriginalTile(ref availableMoves); // ? LayerMask.NameToLayer("Highlight") : LayerMask.NameToLayer("Tile");
+                tiles[currentHover.x, currentHover.y].layer = ReturnToOriginalTile();
                 currentHover = hitPosition;
                 tiles[hitPosition.x, hitPosition.y].layer = LayerMask.NameToLayer("Hover"); // 새로운 hover tile -> "Hover" layer로 변경
             }
@@ -111,8 +111,8 @@ public class Chessboard : MonoBehaviour
                         // 이동 가능 위치 list에 저장
                         availableMoves = currentlyDragging.GetAvailableMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y);
                         
-                        // special move 가능한 위치 list에 저장
-                        specialMove = currentlyDragging.GetSpecialMoves(ref chessPieces, ref moveList, ref availableMoves);
+                        // special move 유형 반환받아 저장
+                        specialMove = currentlyDragging.GetSpecialMoves(ref chessPieces, ref moveList, ref specialMoves);
 
                         HighlightTiles(); // highlight
                         islifting = liftingPiece(); // chessPiece lifting (islifting = true로 변경)
@@ -138,7 +138,7 @@ public class Chessboard : MonoBehaviour
             // tile -> background
             if (currentHover != -Vector2Int.one) // tile 작업 - chess board에서 벗어난 곳으로 hover 시
             {
-                tiles[currentHover.x, currentHover.y].layer = ReturnToOriginalTile(ref availableMoves);// ? LayerMask.NameToLayer("Highlight") : LayerMask.NameToLayer("Tile");
+                tiles[currentHover.x, currentHover.y].layer = ReturnToOriginalTile();
                 currentHover = -Vector2Int.one; // tile 밖이므로 위치 정보 (-1, -1) 저장
             }
 
@@ -268,14 +268,23 @@ public class Chessboard : MonoBehaviour
                     tiles[availableMoves[i].x, availableMoves[i].y].layer = LayerMask.NameToLayer("Insight"); // 빨간 "Insight" layer로 변경
                     continue;
                 }
+                
             tiles[availableMoves[i].x, availableMoves[i].y].layer = LayerMask.NameToLayer("Highlight"); // 그 외 "Highlight" layer로 변경
         }
+        for (int i = 0; i < specialMoves.Count; i++)
+            tiles[specialMoves[i].x, specialMoves[i].y].layer = LayerMask.NameToLayer("Special"); // special move 가능한 위치 - "Special" layer로 변경
     }
-    private void RemoveHighlightTiles() // Highlight 제거
+    private void RemoveHighlightTiles() // "Highlight", "Special" 제거
     {
+        // "Highlight" 제거
         for (int i = 0; i < availableMoves.Count; i++)
             tiles[availableMoves[i].x, availableMoves[i].y].layer = LayerMask.NameToLayer("Tile");
         availableMoves.Clear();
+
+        // "Special" 제거
+        for (int i = 0; i < specialMoves.Count; i++)
+            tiles[specialMoves[i].x, specialMoves[i].y].layer = LayerMask.NameToLayer("Tile");
+        specialMoves.Clear();
     }
 
     // CheckMate (Win)
@@ -332,6 +341,19 @@ public class Chessboard : MonoBehaviour
         EditorApplication.isPlaying = false; // unity editor도 play 종료
     }
 
+    // Special Moves
+    private void ProcessSpecialMove()
+    {
+        if (specialMove == SpecialMove.Castling)
+        {
+
+        }
+        else if (specialMove == SpecialMove.Promotion)
+        {
+
+        }
+    }
+
     // Operations
     private Vector2Int LookUpTileIndex(GameObject hitInfo)
     {
@@ -344,10 +366,10 @@ public class Chessboard : MonoBehaviour
     }
     private bool MoveTo(ChessPiece cp, int x, int y) // x, y = hitPosition (이동하려는 위치)
     {
-        if (!ContainsValidMove(ref availableMoves, new Vector2Int(x, y))) // "Highlight" tile이 아닌 위치로 이동 시도 (false 반환)
+        if (!ContainsValidMove(ref availableMoves, new Vector2Int(x, y)) && !isSpecialMove(ref specialMoves, new Vector2Int(x, y))) // "Highlight" && "Special" 이 아닌 위치로 이동 시도
             return false;
         
-        Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY); // currentX, Y = 이동 전 위치
+        Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY); // previous position (= currentX, Y) = 이동 전 위치
 
         if (chessPieces[x, y] != null) // 이동할 위치에 chess 말이 있을 경우
         {
@@ -385,12 +407,14 @@ public class Chessboard : MonoBehaviour
         }
 
         chessPieces[x, y] = cp; // 이동하려는 위치에 chess 말 저장
-        chessPieces[previousPosition.x, previousPosition.y] = null; // 이동 전 위치 정보 삭제
+        chessPieces[previousPosition.x, previousPosition.y] = null; // 이동 전 chess board 위 chess 말 삭제
 
         PositionSinglePiece(x, y, false); // chess 말 이동 (smooth operation : force = false)
 
         isWhiteTurn = !isWhiteTurn; // turn 순환 (white -> black -> white -> black)
-        moveList.Add(new Vector2Int[] { previousPosition, new Vector2Int(x, y)}); // 여태 움직인 모든 move에 대해 list에 vector2Int array 형태로 저장
+        moveList.Add(new Vector2Int[] { previousPosition, new Vector2Int(x, y) }); // 모든 chess move 저장
+
+        ProcessSpecialMove(); // special move에 해당되면 logic 수행
 
         return true;
     }
@@ -402,16 +426,30 @@ public class Chessboard : MonoBehaviour
         
         return false;
     }
-    private int ReturnToOriginalTile(ref List<Vector2Int> moves) // 기존 tile layer로의 복구
+    private bool isSpecialMove(ref List<Vector2Int> moves, Vector2Int pos)
     {
-        for (int i = 0; i < moves.Count; i++) // 이동 가능한 타일 list (availableMoves = moves) 순회
-            if (moves[i].x == currentHover.x && moves[i].y == currentHover.y) // 마우스 옮기기 직전 tile (= currentHover)이 moves에 포함되면 (Highlight || Insight)
+        for (int i = 0; i < moves.Count; i++)
+            if (moves[i].x == pos.x && moves[i].y == pos.y)
+                return true;
+        
+        return false;
+    }
+    private int ReturnToOriginalTile() // "Hover" -> " ? " (기존 tile layer로의 복구) - availableMoves, specialMoves에 대해 수행
+    {
+        for (int i = 0; i < availableMoves.Count; i++) // 이동 가능한 타일 list (availableMoves = moves) 순회
+            if (availableMoves[i].x == currentHover.x && availableMoves[i].y == currentHover.y) // 마우스 옮기기 직전 tile (= currentHover)이 moves에 포함되면 (Highlight || Insight || Special)
             {
-                if (chessPieces[moves[i].x, moves[i].y] != null) // 이동 가능 타일 중 chess 말이 존재한다? = 상대 team 말 (같은 team 말은 모두 availableMoves에서 제외되기 때문)
-                    return LayerMask.NameToLayer("Insight"); // kill 가능한 tile임을 표시 ("Insight")
+                if (chessPieces[availableMoves[i].x, availableMoves[i].y] != null) // 이동 가능 타일 중 chess 말이 존재한다? = 상대 team 말 (같은 team 말은 모두 availableMoves에서 제외되기 때문)
+                    return LayerMask.NameToLayer("Insight"); // kill 가능한 tile 로 복구 ("Insight")
                 
+                // else if (isSpecialMove()) // special move 가능한 tile임을 표시("Special" tile)로 복구
+
                 return LayerMask.NameToLayer("Highlight"); // "Highlight" tile 
             }
+        
+        for (int i = 0; i < specialMoves.Count; i++) // "Special" layer로 복구
+            if (specialMoves[i].x == currentHover.x && specialMoves[i].y == currentHover.y)
+                return LayerMask.NameToLayer("Special");
         
         return LayerMask.NameToLayer("Tile");
     }
