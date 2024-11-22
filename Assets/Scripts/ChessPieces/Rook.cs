@@ -72,8 +72,6 @@ public class Rook : ChessPiece
     {
         SpecialMove sp = SpecialMove.None;
 
-
-
         return sp;
     }
 }

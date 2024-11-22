@@ -55,9 +55,40 @@ public class King : ChessPiece
             // white team
             if (team == 0)
             {
+                // left rook
                 if (leftRook == null) // left rook 도 움직인 적 X
                     if (board[1, 0] == null && board[2, 0] == null && board[3, 0] == null) // rook <-> king 사이 아무것도 없음
+                    {
                         specialMoves.Add(new Vector2Int(2, 0));
+                        sp = SpecialMove.Castling;
+                    }
+
+                // right rook
+                if (rightRook == null) // right rook 도 움직인 적 X
+                    if (board[5, 0] == null && board[6, 0] == null) // rook <-> king 사이 아무것도 없음
+                    {
+                        specialMoves.Add(new Vector2Int(6, 0));
+                        sp = SpecialMove.Castling;
+                    }
+            }
+            // black team
+            else
+            {
+                // left rook
+                if (leftRook == null) // left rook 도 움직인 적 X
+                    if (board[1, 7] == null && board[2, 7] == null && board[3, 7] == null) // rook <-> king 사이 아무것도 없음
+                    {
+                        specialMoves.Add(new Vector2Int(2, 7));
+                        sp = SpecialMove.Castling;
+                    }
+
+                // right rook
+                if (rightRook == null) // right rook 도 움직인 적 X
+                    if (board[5, 7] == null && board[6, 7] == null) // rook <-> king 사이 아무것도 없음
+                    {
+                        specialMoves.Add(new Vector2Int(6, 7));
+                        sp = SpecialMove.Castling;
+                    }
             }
         }
 

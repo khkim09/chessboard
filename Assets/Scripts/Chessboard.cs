@@ -346,6 +346,49 @@ public class Chessboard : MonoBehaviour
     {
         if (specialMove == SpecialMove.Castling)
         {
+            Vector2Int[] lastMove = moveList[moveList.Count - 1];
+
+            // left rook (left castling)
+            if (lastMove[1].x == 2)
+            {
+                // white castling
+                if (lastMove[1].y == 0)
+                {
+                    ChessPiece rook = chessPieces[0, 0];
+                    chessPieces[3, 0] = rook;
+                    PositionSinglePiece(3, 0, false); // left rook 이동
+                    chessPieces[0, 0] = null;
+                }
+                // black castling
+                if (lastMove[1].y == 7)
+                {
+                    ChessPiece rook = chessPieces[0, 7];
+                    chessPieces[3, 7] = rook;
+                    PositionSinglePiece(3, 7, false);
+                    chessPieces[0, 7] = null;
+                }
+            }
+
+            // right rook (right castling)
+            if (lastMove[1].x == 6)
+            {
+                // white castling
+                if (lastMove[1].y == 0)
+                {
+                    ChessPiece rook = chessPieces[7, 0];
+                    chessPieces[5, 0] = rook;
+                    PositionSinglePiece(5, 0, false); // left rook 이동
+                    chessPieces[7, 0] = null;
+                }
+                // black castling
+                if (lastMove[1].y == 7)
+                {
+                    ChessPiece rook = chessPieces[7, 7];
+                    chessPieces[5, 7] = rook;
+                    PositionSinglePiece(5, 7, false);
+                    chessPieces[7, 7] = null;
+                }
+            }
 
         }
         else if (specialMove == SpecialMove.Promotion)
