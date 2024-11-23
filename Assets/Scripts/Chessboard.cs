@@ -29,7 +29,7 @@ public class Chessboard : MonoBehaviour
     [SerializeField] private float dragOffset = 1.0f;
     [SerializeField] private bool islifting = false;
     [SerializeField] private GameObject victoryScreen;
-    [SerializeField] private GameObject choosePieceScreen;
+    [SerializeField] private GameObject choosingScreen;
 
     [Header("Prefabs && Materials")] // array - prefabs & materials
     [SerializeField] private GameObject[] prefabs;
@@ -345,23 +345,55 @@ public class Chessboard : MonoBehaviour
     // Choosing chessPiece type for promotion
     private void ChoosePromotionChessType()
     {
-        choosePieceScreen.SetActive(true);
+        choosingScreen.SetActive(true);
     }
     public void OnRookButton()
     {
-        
+        choosingScreen.SetActive(false);
+
+        Vector2Int[] lastMove = moveList[moveList.Count - 1];
+        ChessPiece readyPawn = chessPieces[lastMove[1].x, lastMove[1].y];
+
+        Destroy(chessPieces[lastMove[1].x, lastMove[1].y].gameObject); // 기존 pawn 삭제
+        ChessPiece newRook = SpawnSinglePiece(ChessPieceType.Rook, readyPawn.team); // pawn -> rook
+        chessPieces[lastMove[1].x, lastMove[1].y] = newRook; // moveList에 pawn이 아닌 rook으로 적용되도록 설정
+        PositionSinglePiece(lastMove[1].x, lastMove[1].y, true); // rook 위치
     }
     public void OnKnightButton()
     {
+        choosingScreen.SetActive(false);
 
+        Vector2Int[] lastMove = moveList[moveList.Count - 1];
+        ChessPiece readyPawn = chessPieces[lastMove[1].x, lastMove[1].y];
+
+        Destroy(chessPieces[lastMove[1].x, lastMove[1].y].gameObject);
+        ChessPiece newKnight = SpawnSinglePiece(ChessPieceType.Knight, readyPawn.team); // pawn -> knight
+        chessPieces[lastMove[1].x, lastMove[1].y] = newKnight;
+        PositionSinglePiece(lastMove[1].x, lastMove[1].y, true);
     }
     public void OnBishopButton()
     {
+        choosingScreen.SetActive(false);
 
+        Vector2Int[] lastMove = moveList[moveList.Count - 1];
+        ChessPiece readyPawn = chessPieces[lastMove[1].x, lastMove[1].y];
+
+        Destroy(chessPieces[lastMove[1].x, lastMove[1].y].gameObject);
+        ChessPiece newBishop = SpawnSinglePiece(ChessPieceType.Bishop, readyPawn.team); // pawn -> bishop
+        chessPieces[lastMove[1].x, lastMove[1].y] = newBishop;
+        PositionSinglePiece(lastMove[1].x, lastMove[1].y, true);
     }
     public void OnQueenButton()
     {
+        choosingScreen.SetActive(false);
 
+        Vector2Int[] lastMove = moveList[moveList.Count - 1];
+        ChessPiece readyPawn = chessPieces[lastMove[1].x, lastMove[1].y];
+
+        Destroy(chessPieces[lastMove[1].x, lastMove[1].y].gameObject);
+        ChessPiece newQueen = SpawnSinglePiece(ChessPieceType.Queen, readyPawn.team); // pawn -> queen
+        chessPieces[lastMove[1].x, lastMove[1].y] = newQueen;
+        PositionSinglePiece(lastMove[1].x, lastMove[1].y, true);
     }
 
     // Special Moves
@@ -424,7 +456,7 @@ public class Chessboard : MonoBehaviour
 
             if (readyPawn.type == ChessPieceType.Pawn)
             {
-                if (readyPawn.team == 0 && lastMove[1].y == 7)
+                if ((readyPawn.team == 0 && lastMove[1].y == 7) || (readyPawn.team == 1 && lastMove[1].y == 0)) // pawn이 끝까지 도착
                 {
                     ChoosePromotionChessType();
                 }
