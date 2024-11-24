@@ -2552,7 +2552,7 @@ MonoBehaviour:
   dragOffset: 1
   islifting: 0
   victoryScreen: {fileID: 1627806091}
-  choosePieceScreen: {fileID: 0}
+  choosingScreen: {fileID: 564271777}
   prefabs:
   - {fileID: 9162628107293567065, guid: 246372d0421b3df41b44863acc9272b3, type: 3}
   - {fileID: 7241087607627658425, guid: 1d3b2cd7fa09d3e4d8389b12329ed19f, type: 3}

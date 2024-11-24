@@ -115,6 +115,7 @@ public class Chessboard : MonoBehaviour
                         // special move 유형 반환받아 저장
                         specialMove = currentlyDragging.GetSpecialMoves(ref chessPieces, ref moveList, ref specialMoves);
 
+                        PreventCheck(); // chess 말 이동 시 check인 상황 - 이동 제한
                         HighlightTiles(); // highlight
                         islifting = liftingPiece(); // chessPiece lifting (islifting = true로 변경)
                     }
@@ -397,7 +398,7 @@ public class Chessboard : MonoBehaviour
     }
 
     // Special Moves
-    private void ProcessSpecialMove()
+    private void ProcessSpecialMove() // castling, promotion
     {
         // castling - king <-> rook switch 변환
         if (specialMove == SpecialMove.Castling)
@@ -462,6 +463,21 @@ public class Chessboard : MonoBehaviour
                 }
             }
         }
+    }
+    private void PreventCheck() // 움직이면 check 상황 - 못 움직이도록 highlight tile 제거
+    {
+        ChessPiece targetKing = null;
+        for (int x = 0; x < TILE_COUNT_X; x++)
+            for (int y = 0; y < TILE_COUNT_Y; y++)
+                if (chessPieces[x, y].type == ChessPieceType.King)
+                    if (chessPieces[x, y].team == currentlyDragging.team)
+                        targetKing = chessPieces[x, y];
+
+        SimulateMoveForSinglePiece(currentlyDragging, ref availableMoves, targetKing);
+    }
+    private void SimulateMoveForSinglePiece(ChessPiece cp, ref List<Vector2Int> moves, ChessPiece targetKing)
+    {
+        
     }
 
     // Operations
