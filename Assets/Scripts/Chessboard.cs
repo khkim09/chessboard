@@ -115,7 +115,7 @@ public class Chessboard : MonoBehaviour
                         // special move 유형 반환받아 저장
                         specialMove = currentlyDragging.GetSpecialMoves(ref chessPieces, ref moveList, ref specialMoves);
 
-                        // PreventCheck(); // chess 말 이동 시 check인 상황 - 해당 chess 말 이동 제한 || 현재 check인 상황 - king만 이동 가능
+                        PreventCheck(); // chess 말 이동 시 check인 상황 - 해당 chess 말 이동 제한 || 현재 check인 상황 - king만 이동 가능
                         HighlightTiles(); // highlight
                         islifting = liftingPiece(); // chessPiece lifting (islifting = true로 변경)
                     }
@@ -464,21 +464,83 @@ public class Chessboard : MonoBehaviour
             }
         }
     }
-    private void PreventCheck() // 움직이면 check 상황 - 못 움직이도록 highlight tile 제거
+    private void PreventCheck() // 움직이면 kill 당하는 상황 - 못 움직이도록 availableMoves에서 제거
     {
-        ChessPiece targetKing = null;
+        ChessPiece targetKing = null; // currentlyDragging team의 king 저장
         for (int x = 0; x < TILE_COUNT_X; x++)
             for (int y = 0; y < TILE_COUNT_Y; y++)
-                if (chessPieces[x, y].type == ChessPieceType.King)
-                    if (chessPieces[x, y].team == currentlyDragging.team)
-                        targetKing = chessPieces[x, y];
+                if (chessPieces[x, y] != null)
+                    if (chessPieces[x, y].type == ChessPieceType.King)
+                        if (chessPieces[x, y].team == currentlyDragging.team)
+                            targetKing = chessPieces[x, y];
 
-        // 해당 chess 말 움직일 시 check가 되는 상황 - 움직임 제한
+        // simulation 후 움직임 제한
         SimulateMoveForSinglePiece(currentlyDragging, ref availableMoves, targetKing);
     }
-    private void SimulateMoveForSinglePiece(ChessPiece cp, ref List<Vector2Int> moves, ChessPiece targetKing)
+    private void SimulateMoveForSinglePiece(ChessPiece cp, ref List<Vector2Int> moves, ChessPiece targetKing) // simulation
     {
-        
+        // currentlyDragging의 현재 위치 저장
+        int actualX = cp.currentX;
+        int actualY = cp.currentY;
+        List<Vector2Int> movesToRemove = new List<Vector2Int>(); // 이동 제한 list
+
+        // availableMoves simulation - check 상황 확인
+        for (int i = 0; i < moves.Count; i++)
+        {
+            int simX = moves[i].x; // availableMove 위치
+            int simY = moves[i].y;
+
+            Vector2Int kingPostionThisSim = new Vector2Int(targetKing.currentX, targetKing.currentY); // simulation에서의 king의 위치
+
+            if (cp.type == ChessPieceType.King) // currentlyDragging = king일 경우 king position update (availableMoves 위치)
+                kingPostionThisSim = new Vector2Int(simX, simY);
+
+            // currentlyDragging을 kill할 가능성 있는 chessPiece 저장 과정
+            ChessPiece[,] simulation = new ChessPiece[TILE_COUNT_X, TILE_COUNT_Y]; // 새로운 chess 말 위치 저장할 8 x 8 배열 (not reference)
+            List<ChessPiece> simAttackingPieces = new List<ChessPiece>(); // currentlyDragging을 kill 할 가능성 있는 chessPiece 저장할 list
+            for (int x = 0; x < TILE_COUNT_X; x++)
+                for (int y = 0; y < TILE_COUNT_Y; y++)
+                    if (chessPieces[x, y] != null)
+                    {
+                        simulation[x, y] = chessPieces[x, y]; // simulation 전의 chessPiece 위치 복사 (copy 과정)
+                        if (simulation[x, y].team != cp.team) // cp(currentlyDragging)의 상대 team 모두 저장
+                            simAttackingPieces.Add(simulation[x, y]);
+                    }
+
+            // Simulation 수행
+            simulation[actualX, actualY] = null; // 현재 currentlyDragging의 위치 해제
+            cp.currentX = simX;
+            cp.currentY = simY;
+            simulation[simX, simY] = cp; // currentlyDragging의 이동 가능한 tile로의 위치 이동 (simulation)
+
+            // currentlyDragging이 kill할 수 있는 chessPiece는 제거
+            var deadPiece = simAttackingPieces.Find(c => c.currentX == simX && c.currentY == simY);
+            if (deadPiece != null)
+                simAttackingPieces.Remove(deadPiece);
+
+            // simAttackingPieces (currentlyDragging을 kill할 가능성 있는 chessPiece)의 availableMove 저장
+            List<Vector2Int> simMoves = new List<Vector2Int>();
+
+            // 해당 tile로 이동 시 죽을 경우 이동 제한
+            for (int p = 0; p < simAttackingPieces.Count; p++)
+            {
+                List<Vector2Int> pieceMoves = simAttackingPieces[p].GetAvailableMoves(ref simulation, TILE_COUNT_X, TILE_COUNT_Y); // currentlyDragging을 kill할 가능성 있는 chessPiece의 availableMove 호출
+                for (int q = 0; q < pieceMoves.Count; q++)
+                    simMoves.Add(pieceMoves[q]); // simMoves에 추가
+            }
+
+            // simMoves에 king의 현재 위치가 포함될 경우 (check), 이동 제한 list에 추가
+            if (ContainsValidMove(ref simMoves, kingPostionThisSim))
+                movesToRemove.Add(moves[i]);
+            
+            // simulation 실행 전으로 chessPiece 위치 복구
+            cp.currentX = actualX;
+            cp.currentY = actualY;
+        }
+
+        // 현재 이동 가능 tile에서 제외 (availableMoves에서 제거)
+        for (int i = 0; i < movesToRemove.Count; i++)
+            moves.Remove(movesToRemove[i]);
     }
 
     // Operations
