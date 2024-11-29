@@ -115,7 +115,7 @@ public class Chessboard : MonoBehaviour
                         // special move 유형 반환받아 저장
                         specialMove = currentlyDragging.GetSpecialMoves(ref chessPieces, ref moveList, ref specialMoves);
 
-                        PreventCheck(); // chess 말 이동 시 check인 상황 - 해당 chess 말 이동 제한 || 현재 check인 상황 - king만 이동 가능
+                        PreventCheck(); // chess 말 이동 시 check인 상황 - 해당 chess 말 이동 제한 || 현재 check인 상황 - king 구할 수 있는 chess 말만 이동 가능
                         HighlightTiles(); // highlight
                         islifting = liftingPiece(); // chessPiece lifting (islifting = true로 변경)
                     }
@@ -464,7 +464,7 @@ public class Chessboard : MonoBehaviour
             }
         }
     }
-    private void PreventCheck() // 움직이면 kill 당하는 상황 - 못 움직이도록 availableMoves에서 제거
+    private void PreventCheck() // 움직이면 check 되는 상황 - 못 움직이도록 availableMoves에서 제거
     {
         ChessPiece targetKing = null; // currentlyDragging team의 king 저장
         for (int x = 0; x < TILE_COUNT_X; x++)
