@@ -115,7 +115,7 @@ public class Chessboard : MonoBehaviour
                         // special move 유형 반환받아 저장
                         specialMove = currentlyDragging.GetSpecialMoves(ref chessPieces, ref moveList, ref specialMoves);
 
-                        PreventCheck(); // chess 말 이동 시 check인 상황 - 이동 제한
+                        // PreventCheck(); // chess 말 이동 시 check인 상황 - 해당 chess 말 이동 제한 || 현재 check인 상황 - king만 이동 가능
                         HighlightTiles(); // highlight
                         islifting = liftingPiece(); // chessPiece lifting (islifting = true로 변경)
                     }
@@ -473,6 +473,7 @@ public class Chessboard : MonoBehaviour
                     if (chessPieces[x, y].team == currentlyDragging.team)
                         targetKing = chessPieces[x, y];
 
+        // 해당 chess 말 움직일 시 check가 되는 상황 - 움직임 제한
         SimulateMoveForSinglePiece(currentlyDragging, ref availableMoves, targetKing);
     }
     private void SimulateMoveForSinglePiece(ChessPiece cp, ref List<Vector2Int> moves, ChessPiece targetKing)
