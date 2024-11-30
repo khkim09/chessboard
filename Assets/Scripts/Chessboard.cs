@@ -542,6 +542,56 @@ public class Chessboard : MonoBehaviour
         for (int i = 0; i < movesToRemove.Count; i++)
             moves.Remove(movesToRemove[i]);
     }
+    private bool CheckforCheckMate() // checkmate라 움직일 게 없는 상황 - exit
+    {
+        Vector2Int[] lastMove = moveList[moveList.Count - 1]; // 마지막 이동 chess 말의 team 확인
+        int targetTeam = chessPieces[lastMove[1].x, lastMove[1].y].team == 0 ? 1 : 0; // 반대 team의 check 상황 (lastMove가 white였으면, black이 check인 상황)
+
+        List<ChessPiece> attackingPieces = new List<ChessPiece>(); // 공격 team
+        List<ChessPiece> defendingPieces = new List<ChessPiece>(); // 수비 team
+        ChessPiece targetKing = null;
+        for (int x = 0; x < TILE_COUNT_X; x++)
+            for (int y = 0; y < TILE_COUNT_Y; y++)
+                if (chessPieces[x, y] != null)
+                {
+                    if (chessPieces[x, y].team == targetTeam)
+                    {
+                        defendingPieces.Add(chessPieces[x, y]); // check 당한 team의 모든 chessPiece
+                        if (chessPieces[x, y].type == ChessPieceType.King)
+                            targetKing = chessPieces[x, y]; // check 당한 king
+                    }
+                    else
+                    {
+                        attackingPieces.Add(chessPieces[x, y]); // check 만든 team의 모든 chessPiece
+                    }
+                }
+        
+        // attacking Piece들의 이동 가능 위치 받아오기
+        List<Vector2Int> currentAvailableMoves = new List<Vector2Int>();
+        for (int i = 0; i < attackingPieces.Count; i++) // check 만든 team의 chessPiece들 simulation 수행
+        {
+            List<Vector2Int> attackingPieceMoves = attackingPieces[i].GetAvailableMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y); // 공격 team chess 말들의 이동 가능 위치 list로 저장
+            for (int j = 0; j < attackingPieceMoves.Count; j++)
+                currentAvailableMoves.Add(attackingPieceMoves[j]);
+        }
+
+        // 지금 check 상황 ?
+        if (ContainsValidMove(ref currentAvailableMoves, new Vector2Int(targetKing.currentX, targetKing.currentY))) // 공격 team 이동 가능 위치에 현재 targetKing Position이 포함되는가
+        {
+            // king이 위험한 상황 -> 다른 chess Piece로 구할 수 있나
+            for (int i = 0; i < defendingPieces.Count; i++)
+            {
+                List<Vector2Int> defendingPieceMoves = defendingPieces[i].GetAvailableMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y); // 수비 team chess 말들의 이동 가능 위치 list로 저장
+                SimulateMoveForSinglePiece(defendingPieces[i], ref defendingPieceMoves, targetKing); // check 상황 제거 가능한 chess Piece있는지 모두 simulation
+
+                if (defendingPieceMoves.Count == 0) // 수비 team chess말의 이동 가능 tile이 없을 경우 
+                    return true; // check임을 반환
+            }
+            return false; // check에서 벗어날 수 있음 (다른 chessPiece 옮겨서 수비)
+        }
+
+        return false; // 지금 check 상황 아님
+    }
 
     // Operations
     private Vector2Int LookUpTileIndex(GameObject hitInfo)
@@ -604,6 +654,9 @@ public class Chessboard : MonoBehaviour
         moveList.Add(new Vector2Int[] { previousPosition, new Vector2Int(x, y) }); // 모든 chess move 저장
 
         ProcessSpecialMove(); // special move에 해당되면 logic 수행
+
+        if (CheckforCheckMate())
+            CheckMate(cp.team);
 
         return true;
     }
