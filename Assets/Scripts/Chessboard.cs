@@ -584,10 +584,10 @@ public class Chessboard : MonoBehaviour
                 List<Vector2Int> defendingPieceMoves = defendingPieces[i].GetAvailableMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y); // 수비 team chess 말들의 이동 가능 위치 list로 저장
                 SimulateMoveForSinglePiece(defendingPieces[i], ref defendingPieceMoves, targetKing); // check 상황 제거 가능한 chess Piece있는지 모두 simulation
 
-                if (defendingPieceMoves.Count == 0) // 수비 team chess말의 이동 가능 tile이 없을 경우 
-                    return true; // check임을 반환
+                if (defendingPieceMoves.Count != 0) // 수비 team chess말의 이동 가능 tile이 없을 경우 
+                    return false; // check임을 반환
             }
-            return false; // check에서 벗어날 수 있음 (다른 chessPiece 옮겨서 수비)
+            return true; // check에서 벗어날 수 있음 (다른 chessPiece 옮겨서 수비)
         }
 
         return false; // 지금 check 상황 아님
