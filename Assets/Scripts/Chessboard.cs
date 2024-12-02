@@ -340,7 +340,7 @@ public class Chessboard : MonoBehaviour
     public void OnExitButton()
     {
         Application.Quit(); // build 된 실행 파일 내 적용
-        EditorApplication.isPlaying = false; // unity editor도 play 종료
+        // EditorApplication.isPlaying = false; // unity editor도 play 종료
     }
 
     // Choosing chessPiece type for promotion
