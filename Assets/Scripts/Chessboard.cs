@@ -5,9 +5,11 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security.Cryptography.X509Certificates;
 using TMPro;
 using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public enum SpecialMove
 {
@@ -340,7 +342,9 @@ public class Chessboard : MonoBehaviour
     public void OnExitButton()
     {
         Application.Quit(); // build 된 실행 파일 내 적용
-        // EditorApplication.isPlaying = false; // unity editor도 play 종료
+        #if UNITY_EDITOR
+        EditorApplication.isPlaying = false; // unity editor도 play 종료
+        #endif
     }
 
     // Choosing chessPiece type for promotion
