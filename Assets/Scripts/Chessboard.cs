@@ -62,6 +62,7 @@ public class Chessboard : MonoBehaviour
     // Multi Logic
     private int playerCount = -1;
     private int currentTeam = -1;
+    private bool localGame = true;
 
 
 
@@ -664,6 +665,8 @@ public class Chessboard : MonoBehaviour
         PositionSinglePiece(x, y, false); // chess 말 이동 (smooth operation : force = false)
 
         isWhiteTurn = !isWhiteTurn; // turn 순환 (white -> black -> white -> black)
+        if (localGame) // local Game일 경우의 turn 순환
+            currentTeam = (currentTeam == 0) ? 1 : 0;
         moveList.Add(new Vector2Int[] { previousPosition, new Vector2Int(x, y) }); // 모든 chess move 저장
 
         ProcessSpecialMove(); // special move에 해당되면 logic 수행
@@ -726,10 +729,17 @@ public class Chessboard : MonoBehaviour
         NetUtility.C_WELCOME += OnWelcomeClient;
 
         NetUtility.C_START_GAME += OnStartGameClient;
+
+        GameUI.Instance.SetLocalGame += OnSetLocalGame;
     }
     private void UnRegisterEvents()
     {
+        NetUtility.S_WELCOME -= OnWelcomeServer;
+        NetUtility.C_WELCOME -= OnWelcomeClient;
 
+        NetUtility.C_START_GAME -= OnStartGameClient;
+
+        GameUI.Instance.SetLocalGame -= OnSetLocalGame;
     }
 
     // Server
@@ -745,16 +755,26 @@ public class Chessboard : MonoBehaviour
         if (playerCount == 1)
             Server.Instance.Broadcast(new NetStartGame());
     }
+
     // Client
     private void OnWelcomeClient(NetMessage msg)
     {
         NetWelcome nw = msg as NetWelcome;
 
         currentTeam = nw.AssignedTeam;
+
+        if (localGame && currentTeam == 0)
+            Server.Instance.Broadcast(new NetStartGame());
     }
     private void OnStartGameClient(NetMessage msg)
     {
-        GameUI.Instance.ChangeCamera((currentTeam == 0) ? CameraAngle.whiteTema : CameraAngle.blackTeam);
+        GameUI.Instance.ChangeCamera((currentTeam == 0) ? CameraAngle.whiteTeam : CameraAngle.blackTeam);
+    }
+
+    //Local
+    private void OnSetLocalGame(bool b)
+    {
+        localGame = b;
     }
     #endregion
 }
