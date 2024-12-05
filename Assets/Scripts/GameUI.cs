@@ -24,6 +24,7 @@ public class GameUI : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        RegisterEvents();
     }
 
     // Cameras
@@ -68,4 +69,20 @@ public class GameUI : MonoBehaviour
         client.Shutdown();
         menuAnimator.SetTrigger("OnlineMenu");
     }
+
+    #region
+    private void RegisterEvents()
+    {
+        NetUtility.C_START_GAME += OnStartGameClient;
+    }
+    private void UnRegisterEvents()
+    {
+        NetUtility.C_START_GAME -= OnStartGameClient;
+    }
+
+    private void OnStartGameClient(NetMessage msg)
+    {
+        menuAnimator.SetTrigger("InGameMenu");
+    }
+    #endregion
 }
