@@ -1,12 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Security.Cryptography.X509Certificates;
-using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Unity.Networking.Transport;
 
 #if UNITY_EDITOR
@@ -136,14 +129,27 @@ public class Chessboard : MonoBehaviour
                 {
                     Vector2Int previousPosition = new Vector2Int(currentlyDragging.currentX, currentlyDragging.currentY); // currentX, Y = 이동 전 위치
 
-                    bool validMove = MoveTo(currentlyDragging, hitPosition.x, hitPosition.y); // 이동 가능 여부 - hitPosition = 이동할 위치
-                    
-                    if (!validMove)// 이동 불가 (같은 team 말이 already exists)
+                    if (ContainsValidMove(ref availableMoves, new Vector2Int(hitPosition.x, hitPosition.y)) || isSpecialMove(ref specialMoves, new Vector2Int(hitPosition.x, hitPosition.y))) // "Highlight" && "Special" 이 아닌 위치로 이동 시도
+                    {
+                        MoveTo(previousPosition.x, previousPosition.y, hitPosition.x, hitPosition.y); // 이동 가능 여부 - hitPosition = 이동할 위치
+
+                        // Net Implements
+                        NetMakeMove nmm = new NetMakeMove();
+                        nmm.originalX = previousPosition.x;
+                        nmm.originalY = previousPosition.y;
+                        nmm.destinationX = hitPosition.x;
+                        nmm.destinationY = hitPosition.y;
+                        nmm.teamId = currentTeam;
+
+                        Client.Instance.SendToServer(nmm);
+                    }
+                    else // 이동 불가
+                    {
                         currentlyDragging.SetPosition(GetTileCenter(previousPosition.x, previousPosition.y), false); // 위치 원상 복구
-                    
-                    RemoveHighlightTiles(); // highlight 제거
-                    islifting = landingPiece(); // chessPiece landing (islifting = false로 변경)
-                    currentlyDragging = null; // 선택한 chess 말 해제
+                        RemoveHighlightTiles(); // highlight 제거
+                        islifting = landingPiece(); // chessPiece landing (islifting = false로 변경)
+                        currentlyDragging = null; // 선택 말 해제
+                    }
                 }
             }
         }
@@ -617,11 +623,9 @@ public class Chessboard : MonoBehaviour
 
         return -Vector2Int.one; // tile을 hovering 하고 있지 않음 (-1, -1)
     }
-    private bool MoveTo(ChessPiece cp, int x, int y) // x, y = hitPosition (이동하려는 위치)
+    private void MoveTo(int originalX, int originalY, int x, int y) // x, y = hitPosition (이동하려는 위치)
     {
-        if (!ContainsValidMove(ref availableMoves, new Vector2Int(x, y)) && !isSpecialMove(ref specialMoves, new Vector2Int(x, y))) // "Highlight" && "Special" 이 아닌 위치로 이동 시도
-            return false;
-        
+        ChessPiece cp = chessPieces[originalX, originalY];
         Vector2Int previousPosition = new Vector2Int(cp.currentX, cp.currentY); // previous position (= currentX, Y) = 이동 전 위치
 
         if (chessPieces[x, y] != null) // 이동할 위치에 chess 말이 있을 경우
@@ -629,7 +633,7 @@ public class Chessboard : MonoBehaviour
             ChessPiece ocp = chessPieces[x, y]; // already exists chess 말
 
             if (cp.team == ocp.team) // 같은 team (이동 불가)
-                return false;
+                return;
             
             if (ocp.team == 0) // ocp == white team
             {
@@ -671,10 +675,15 @@ public class Chessboard : MonoBehaviour
 
         ProcessSpecialMove(); // special move에 해당되면 logic 수행
 
+        RemoveHighlightTiles(); // highlight 제거
+        islifting = landingPiece(); // chessPiece landing (islifting = false로 변경)
+        if (currentlyDragging)
+            currentlyDragging = null; // 선택 말 해제
+
         if (CheckforCheckMate())
             CheckMate(cp.team);
 
-        return true;
+        return;
     }
     private bool ContainsValidMove(ref List<Vector2Int> moves, Vector2Int pos) // 이동 가능한 위치 ("Highlight") 여부 확인
     {
@@ -726,18 +735,22 @@ public class Chessboard : MonoBehaviour
     private void RegisterEvents()
     {
         NetUtility.S_WELCOME += OnWelcomeServer;
-        NetUtility.C_WELCOME += OnWelcomeClient;
+        NetUtility.S_MAKE_MOVE += OnMakeMoveServer;
 
+        NetUtility.C_WELCOME += OnWelcomeClient;
         NetUtility.C_START_GAME += OnStartGameClient;
+        NetUtility.C_MAKE_MOVE += OnMakeMoveClient;
 
         GameUI.Instance.SetLocalGame += OnSetLocalGame;
     }
     private void UnRegisterEvents()
     {
         NetUtility.S_WELCOME -= OnWelcomeServer;
-        NetUtility.C_WELCOME -= OnWelcomeClient;
+        NetUtility.S_MAKE_MOVE -= OnMakeMoveServer;
 
+        NetUtility.C_WELCOME -= OnWelcomeClient;
         NetUtility.C_START_GAME -= OnStartGameClient;
+        NetUtility.C_MAKE_MOVE -= OnMakeMoveClient;
 
         GameUI.Instance.SetLocalGame -= OnSetLocalGame;
     }
@@ -755,6 +768,14 @@ public class Chessboard : MonoBehaviour
         if (playerCount == 1)
             Server.Instance.Broadcast(new NetStartGame());
     }
+    private void OnMakeMoveServer(NetMessage msg, NetworkConnection cnn)
+    {
+        NetMakeMove nmm = msg as NetMakeMove;
+
+
+
+        Server.Instance.Broadcast(nmm);
+    }
 
     // Client
     private void OnWelcomeClient(NetMessage msg)
@@ -769,6 +790,22 @@ public class Chessboard : MonoBehaviour
     private void OnStartGameClient(NetMessage msg)
     {
         GameUI.Instance.ChangeCamera((currentTeam == 0) ? CameraAngle.whiteTeam : CameraAngle.blackTeam);
+    }
+    private void OnMakeMoveClient(NetMessage msg)
+    {
+        NetMakeMove nmm = msg as NetMakeMove;
+
+        Debug.Log($"Move : {nmm.teamId} : ({nmm.originalX}, {nmm.originalY}) -> ({nmm.destinationX}, {nmm.destinationY})");
+
+        if (nmm.teamId != currentTeam)
+        {
+            ChessPiece target = chessPieces[nmm.originalX, nmm.originalY];
+
+            availableMoves = target.GetAvailableMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y);
+            specialMove = target.GetSpecialMoves(ref chessPieces, ref moveList, ref specialMoves);
+
+            MoveTo(nmm.originalX, nmm.originalY, nmm.destinationX, nmm.destinationY);
+        }
     }
 
     //Local
