@@ -14,6 +14,9 @@ public class Pawn : ChessPiece
         // pawn simple move
         if (team == 0) // white pawn의 첫 움직임 (1, 2칸 전진 중 선택)
         {
+            if (currentY == 7)
+                return l;
+
             if (board[currentX, currentY + direction] == null)
                 if (!(currentY == 6))
                     l.Add(new Vector2Int(currentX, currentY + direction));
@@ -25,6 +28,9 @@ public class Pawn : ChessPiece
         }
         else // black pawn 동일
         {
+            if (currentY == 0)
+                return l;
+
             if (board[currentX, currentY + direction] == null)
                 if (!(currentY == 1))
                     l.Add(new Vector2Int(currentX, currentY + direction));

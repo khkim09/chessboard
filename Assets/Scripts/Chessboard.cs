@@ -1,10 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Networking.Transport;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
+using UnityEngine.UI;
 
 public enum SpecialMove
 {
@@ -27,6 +24,8 @@ public class Chessboard : MonoBehaviour
     [SerializeField] private bool islifting = false;
     [SerializeField] private GameObject victoryScreen;
     [SerializeField] private GameObject choosingScreen;
+    [SerializeField] private Transform rematchIndicator;
+    [SerializeField] private Button rematchButton;
 
     [Header("Prefabs && Materials")] // array - prefabs & materials
     [SerializeField] private GameObject[] prefabs;
@@ -56,6 +55,7 @@ public class Chessboard : MonoBehaviour
     private int playerCount = -1;
     private int currentTeam = -1;
     private bool localGame = true;
+    private bool[] playerRematch = new bool[2];
 
 
 
@@ -317,9 +317,36 @@ public class Chessboard : MonoBehaviour
         victoryScreen.SetActive(true);
         victoryScreen.transform.GetChild(winningTeam).gameObject.SetActive(true);
     }
-    public void OnResetButton()
+    public void OnRematchButton()
+    {
+        if (localGame)
+        {
+            NetRematch wrm = new NetRematch();
+            wrm.teamId = 0;
+            wrm.wantRematch = 1;
+            Client.Instance.SendToServer(wrm);
+
+            NetRematch brm = new NetRematch();
+            brm.teamId = 1;
+            brm.wantRematch = 1;
+            Client.Instance.SendToServer(brm);
+        }
+        else
+        {
+            NetRematch nrm = new NetRematch();
+            nrm.teamId = currentTeam;
+            nrm.wantRematch = 1;
+            Client.Instance.SendToServer(nrm);
+        }
+    }
+    public void GameReset()
     {
         // UI - 승리 text mesh 모두 비활성화
+        rematchButton.interactable = true;
+
+        rematchIndicator.transform.GetChild(0).gameObject.SetActive(false);
+        rematchIndicator.transform.GetChild(1).gameObject.SetActive(false);
+
         victoryScreen.transform.GetChild(0).gameObject.SetActive(false);
         victoryScreen.transform.GetChild(1).gameObject.SetActive(false);
         victoryScreen.SetActive(false);
@@ -328,6 +355,8 @@ public class Chessboard : MonoBehaviour
         currentlyDragging = null;
         availableMoves.Clear();
         moveList.Clear();
+        playerRematch[0] = false;
+        playerRematch[1] = false;
 
         // Clean up - 모두 없애고
         for (int i = 0; i < TILE_COUNT_X; i++)
@@ -355,12 +384,21 @@ public class Chessboard : MonoBehaviour
         PositionAllPieces();
         isWhiteTurn = true; // always white first
     }
-    public void OnExitButton()
+    public void OnMenuButton()
     {
-        Application.Quit(); // build 된 실행 파일 내 적용
-        #if UNITY_EDITOR
-        EditorApplication.isPlaying = false; // unity editor도 play 종료
-        #endif
+        NetRematch nrm = new NetRematch();
+        nrm.teamId = currentTeam;
+        nrm.wantRematch = 0;
+        Client.Instance.SendToServer(nrm);
+
+        GameReset();
+        GameUI.Instance.OnLeaveFromGameMenu();
+
+        Invoke("ShutdownRelay", 1.0f);
+
+        // Reset some values
+        playerCount = -1;
+        currentTeam = -1;
     }
 
     // Choosing chessPiece type for promotion
@@ -368,20 +406,33 @@ public class Chessboard : MonoBehaviour
     {
         choosingScreen.SetActive(true);
     }
-    public void OnRookButton()
+    private void SendPromotionMessage(ChessPieceType promotionType)
     {
-        choosingScreen.SetActive(false);
+        if (moveList.Count == 0)
+            return;
 
         Vector2Int[] lastMove = moveList[moveList.Count - 1];
         ChessPiece readyPawn = chessPieces[lastMove[1].x, lastMove[1].y];
 
-        Destroy(chessPieces[lastMove[1].x, lastMove[1].y].gameObject); // 기존 pawn 삭제
-        ChessPiece newRook = SpawnSinglePiece(ChessPieceType.Rook, readyPawn.team); // pawn -> rook
-        chessPieces[lastMove[1].x, lastMove[1].y] = newRook; // moveList에 pawn이 아닌 rook으로 적용되도록 설정
-        PositionSinglePiece(lastMove[1].x, lastMove[1].y, true); // rook 위치
+
+        NetPromotion netPromotion = new NetPromotion
+        {
+            teamId = readyPawn.team,
+            position = lastMove[1],
+            newPieceType = promotionType
+        };
+
+        Client.Instance.SendToServer(netPromotion);
+        choosingScreen.SetActive(false);
+    }
+    public void OnRookButton()
+    {
+        SendPromotionMessage(ChessPieceType.Rook);
     }
     public void OnKnightButton()
     {
+        SendPromotionMessage(ChessPieceType.Knight);
+        /*
         choosingScreen.SetActive(false);
 
         Vector2Int[] lastMove = moveList[moveList.Count - 1];
@@ -391,9 +442,12 @@ public class Chessboard : MonoBehaviour
         ChessPiece newKnight = SpawnSinglePiece(ChessPieceType.Knight, readyPawn.team); // pawn -> knight
         chessPieces[lastMove[1].x, lastMove[1].y] = newKnight;
         PositionSinglePiece(lastMove[1].x, lastMove[1].y, true);
+        */
     }
     public void OnBishopButton()
     {
+        SendPromotionMessage(ChessPieceType.Bishop);
+        /*
         choosingScreen.SetActive(false);
 
         Vector2Int[] lastMove = moveList[moveList.Count - 1];
@@ -403,9 +457,12 @@ public class Chessboard : MonoBehaviour
         ChessPiece newBishop = SpawnSinglePiece(ChessPieceType.Bishop, readyPawn.team); // pawn -> bishop
         chessPieces[lastMove[1].x, lastMove[1].y] = newBishop;
         PositionSinglePiece(lastMove[1].x, lastMove[1].y, true);
+        */
     }
     public void OnQueenButton()
     {
+        SendPromotionMessage(ChessPieceType.Queen);
+        /*
         choosingScreen.SetActive(false);
 
         Vector2Int[] lastMove = moveList[moveList.Count - 1];
@@ -415,6 +472,7 @@ public class Chessboard : MonoBehaviour
         ChessPiece newQueen = SpawnSinglePiece(ChessPieceType.Queen, readyPawn.team); // pawn -> queen
         chessPieces[lastMove[1].x, lastMove[1].y] = newQueen;
         PositionSinglePiece(lastMove[1].x, lastMove[1].y, true);
+        */
     }
 
     // Special Moves
@@ -727,19 +785,26 @@ public class Chessboard : MonoBehaviour
     }
     private bool landingPiece()
     {
+        if (currentlyDragging == null)
+            return false;
         currentlyDragging.SetPosition(GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY), false);
         return false;
     }
+
 
     #region
     private void RegisterEvents()
     {
         NetUtility.S_WELCOME += OnWelcomeServer;
         NetUtility.S_MAKE_MOVE += OnMakeMoveServer;
+        NetUtility.S_REMATCH += OnRematchServer;
+        NetUtility.S_PROMOTION += OnPromotionServer;
 
         NetUtility.C_WELCOME += OnWelcomeClient;
         NetUtility.C_START_GAME += OnStartGameClient;
         NetUtility.C_MAKE_MOVE += OnMakeMoveClient;
+        NetUtility.C_REMATCH += OnRematchClient;
+        NetUtility.C_PROMOTION += OnPromotionClient;
 
         GameUI.Instance.SetLocalGame += OnSetLocalGame;
     }
@@ -747,10 +812,14 @@ public class Chessboard : MonoBehaviour
     {
         NetUtility.S_WELCOME -= OnWelcomeServer;
         NetUtility.S_MAKE_MOVE -= OnMakeMoveServer;
+        NetUtility.S_REMATCH -= OnRematchServer;
+        NetUtility.S_PROMOTION -= OnPromotionServer;
 
         NetUtility.C_WELCOME -= OnWelcomeClient;
         NetUtility.C_START_GAME -= OnStartGameClient;
         NetUtility.C_MAKE_MOVE -= OnMakeMoveClient;
+        NetUtility.C_REMATCH -= OnRematchClient;
+        NetUtility.C_PROMOTION -= OnPromotionClient;
 
         GameUI.Instance.SetLocalGame -= OnSetLocalGame;
     }
@@ -772,9 +841,19 @@ public class Chessboard : MonoBehaviour
     {
         NetMakeMove nmm = msg as NetMakeMove;
 
-
-
         Server.Instance.Broadcast(nmm);
+    }
+    private void OnRematchServer(NetMessage msg, NetworkConnection cnn)
+    {
+        NetRematch nr = msg as NetRematch;
+
+        Server.Instance.Broadcast(nr);
+    }
+    private void OnPromotionServer(NetMessage msg, NetworkConnection cnn)
+    {
+        NetPromotion np = msg as NetPromotion;
+
+        Server.Instance.Broadcast(np);
     }
 
     // Client
@@ -807,10 +886,51 @@ public class Chessboard : MonoBehaviour
             MoveTo(nmm.originalX, nmm.originalY, nmm.destinationX, nmm.destinationY);
         }
     }
+    private void OnRematchClient(NetMessage msg)
+    {
+        // Receive the connection msg
+        NetRematch nrm = msg as NetRematch;
+
+        // Set the boolean for rematch
+        playerRematch[nrm.teamId] = nrm.wantRematch == 1;
+
+        // Activate the piece of UI
+        if (nrm.teamId != currentTeam)
+        {
+            rematchIndicator.transform.GetChild((nrm.wantRematch == 1) ? 0 : 1).gameObject.SetActive(true);
+            if (nrm.wantRematch != 1)
+                rematchButton.interactable = false;
+        }
+
+        // if both wants to rematch
+        if (playerRematch[0] && playerRematch[1])
+            GameReset();
+    }
+    private void OnPromotionClient(NetMessage msg)
+    {
+        NetPromotion np = msg as NetPromotion;
+
+        if (np.teamId != currentTeam)
+        {
+            Debug.Log($"{np.position.x}, {np.position.y}");
+            Destroy(chessPieces[np.position.x, np.position.y].gameObject); // 기존 pawn 삭제
+            ChessPiece newPiece = SpawnSinglePiece(np.newPieceType, np.teamId); // pawn -> ? (promotion 수행)
+            chessPieces[np.position.x, np.position.y] = newPiece; // moveList에 pawn이 아닌 newPieceType으로 적용되도록 설정
+            PositionSinglePiece(np.position.x, np.position.y, true); // newPieceType 위치
+        }
+    }
+
+    private void ShutdownRelay()
+    {
+        Client.Instance.Shutdown();
+        Server.Instance.Shutdown();
+    }
 
     //Local
     private void OnSetLocalGame(bool b)
     {
+        playerCount = -1;
+        currentTeam = -1;
         localGame = b;
     }
     #endregion
