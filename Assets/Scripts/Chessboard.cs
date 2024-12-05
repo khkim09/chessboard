@@ -7,6 +7,8 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Unity.Networking.Transport;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -57,6 +59,10 @@ public class Chessboard : MonoBehaviour
     private SpecialMove specialMove; // rook <-> king swap (castling) 같은 special move
     private List<Vector2Int[]> moveList = new List<Vector2Int[]>(); // 여태 이동한 chess move 모두 저장 : (이동 전 위치 vector2Int, 이동 후 위치 vector2Int) 쌍
 
+    // Multi Logic
+    private int playerCount = -1;
+    private int currentTeam = -1;
+
 
 
     private void Awake() // game start 시 setting 사항
@@ -68,6 +74,8 @@ public class Chessboard : MonoBehaviour
         GenerateAllTiles(tileSize, TILE_COUNT_X, TILE_COUNT_Y); // 8 x 8 chess board 생성 (GenereateAllTiles 호출)
         SpawnAllPieces(); // 32 pieces의 chess pieces 생성
         PositionAllPieces(); // chess pieces의 올바른 positioning
+
+        RegisterEvents();
     }
     private void Update()
     {
@@ -709,4 +717,43 @@ public class Chessboard : MonoBehaviour
         currentlyDragging.SetPosition(GetTileCenter(currentlyDragging.currentX, currentlyDragging.currentY), false);
         return false;
     }
+
+    #region
+    private void RegisterEvents()
+    {
+        NetUtility.S_WELCOME += OnWelcomeServer;
+        NetUtility.C_WELCOME += OnWelcomeClient;
+
+        NetUtility.C_START_GAME += OnStartGameClient;
+    }
+    private void UnRegisterEvents()
+    {
+
+    }
+
+    // Server
+    private void OnWelcomeServer(NetMessage msg, NetworkConnection cnn)
+    {
+        NetWelcome nw = msg as NetWelcome;
+
+        nw.AssignedTeam = ++playerCount;
+
+        Server.Instance.SendToClient(cnn, nw);
+
+        // Start Game
+        if (playerCount == 1)
+            Server.Instance.Broadcast(new NetStartGame());
+    }
+    // Client
+    private void OnWelcomeClient(NetMessage msg)
+    {
+        NetWelcome nw = msg as NetWelcome;
+
+        currentTeam = nw.AssignedTeam;
+    }
+    private void OnStartGameClient(NetMessage msg)
+    {
+        GameUI.Instance.ChangeCamera((currentTeam == 0) ? CameraAngle.whiteTema : CameraAngle.blackTeam);
+    }
+    #endregion
 }
