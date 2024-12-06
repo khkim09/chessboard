@@ -6,6 +6,10 @@ public class NetPromotion : NetMessage
 {
     public int teamId;
     public Vector2Int position;
+    /*
+    public int positionX;
+    public int positionY;
+    */
     public ChessPieceType newPieceType;
 
     public NetPromotion()

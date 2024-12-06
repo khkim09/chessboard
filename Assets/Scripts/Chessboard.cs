@@ -354,9 +354,9 @@ public class Chessboard : MonoBehaviour
         // Field reset - chessPiece 관련 선택 해제
         currentlyDragging = null;
         availableMoves.Clear();
+        specialMoves.Clear();
         moveList.Clear();
-        playerRematch[0] = false;
-        playerRematch[1] = false;
+        playerRematch[0] = playerRematch[1] = false;
 
         // Clean up - 모두 없애고
         for (int i = 0; i < TILE_COUNT_X; i++)
@@ -399,6 +399,7 @@ public class Chessboard : MonoBehaviour
         // Reset some values
         playerCount = -1;
         currentTeam = -1;
+        islifting = false;
     }
 
     // Choosing chessPiece type for promotion
@@ -432,32 +433,10 @@ public class Chessboard : MonoBehaviour
     public void OnKnightButton()
     {
         SendPromotionMessage(ChessPieceType.Knight);
-        /*
-        choosingScreen.SetActive(false);
-
-        Vector2Int[] lastMove = moveList[moveList.Count - 1];
-        ChessPiece readyPawn = chessPieces[lastMove[1].x, lastMove[1].y];
-
-        Destroy(chessPieces[lastMove[1].x, lastMove[1].y].gameObject);
-        ChessPiece newKnight = SpawnSinglePiece(ChessPieceType.Knight, readyPawn.team); // pawn -> knight
-        chessPieces[lastMove[1].x, lastMove[1].y] = newKnight;
-        PositionSinglePiece(lastMove[1].x, lastMove[1].y, true);
-        */
     }
     public void OnBishopButton()
     {
         SendPromotionMessage(ChessPieceType.Bishop);
-        /*
-        choosingScreen.SetActive(false);
-
-        Vector2Int[] lastMove = moveList[moveList.Count - 1];
-        ChessPiece readyPawn = chessPieces[lastMove[1].x, lastMove[1].y];
-
-        Destroy(chessPieces[lastMove[1].x, lastMove[1].y].gameObject);
-        ChessPiece newBishop = SpawnSinglePiece(ChessPieceType.Bishop, readyPawn.team); // pawn -> bishop
-        chessPieces[lastMove[1].x, lastMove[1].y] = newBishop;
-        PositionSinglePiece(lastMove[1].x, lastMove[1].y, true);
-        */
     }
     public void OnQueenButton()
     {
@@ -888,10 +867,8 @@ public class Chessboard : MonoBehaviour
     }
     private void OnRematchClient(NetMessage msg)
     {
-        // Receive the connection msg
         NetRematch nrm = msg as NetRematch;
 
-        // Set the boolean for rematch
         playerRematch[nrm.teamId] = nrm.wantRematch == 1;
 
         // Activate the piece of UI

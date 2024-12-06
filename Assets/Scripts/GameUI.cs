@@ -44,8 +44,8 @@ public class GameUI : MonoBehaviour
     {
         menuAnimator.SetTrigger("InGameMenu");
         SetLocalGame?.Invoke(true);
-        server.Init(8007);
-        client.Init("127.0.0.1", 8007);
+        server.Init(8520);
+        client.Init("127.0.0.1", 8520);
     }
     public void OnOnlineGameButton()
     {
@@ -55,14 +55,14 @@ public class GameUI : MonoBehaviour
     public void OnOnlineHostButton()
     {
         SetLocalGame?.Invoke(false);
-        server.Init(8007);
-        client.Init("127.0.0.1", 8007);
+        server.Init(8520);
+        client.Init("127.0.0.1", 8520);
         menuAnimator.SetTrigger("HostMenu");
     }
     public void OnOnlineConnectButton()
     {
         SetLocalGame?.Invoke(false);
-        client.Init(addressInput.text, 8007);
+        client.Init(addressInput.text, 8520);
     }
     public void OnOnlineBackButton()
     {

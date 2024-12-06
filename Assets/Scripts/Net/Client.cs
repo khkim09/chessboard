@@ -88,6 +88,7 @@ public class Client : MonoBehaviour
                 Debug.Log("Client go disconnected from server");
                 connection = default(NetworkConnection);
                 connectionDropped?.Invoke();
+                Shutdown();
             }
         }
     }

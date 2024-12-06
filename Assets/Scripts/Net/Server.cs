@@ -37,7 +37,7 @@ public class Server : MonoBehaviour
         else
         {
             driver.Listen();
-            Debug.Log("Currently listeneing on port " + endpoint.Port);
+            Debug.Log("Currently listening on port " + endpoint.Port);
         }
 
         connections = new NativeList<NetworkConnection>(2, Allocator.Persistent);
