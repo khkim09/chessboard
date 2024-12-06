@@ -405,7 +405,8 @@ public class Chessboard : MonoBehaviour
     // Choosing chessPiece type for promotion
     private void ChoosePromotionChessType()
     {
-        choosingScreen.SetActive(true);
+        if (currentTeam == (isWhiteTurn ? 1 : 0))
+            choosingScreen.SetActive(true);
     }
     private void SendPromotionMessage(ChessPieceType promotionType)
     {
@@ -415,6 +416,10 @@ public class Chessboard : MonoBehaviour
         Vector2Int[] lastMove = moveList[moveList.Count - 1];
         ChessPiece readyPawn = chessPieces[lastMove[1].x, lastMove[1].y];
 
+        Destroy(chessPieces[lastMove[1].x, lastMove[1].y].gameObject); // 기존 pawn 삭제
+        ChessPiece newPiece = SpawnSinglePiece(promotionType, readyPawn.team); // pawn -> ? (promotion 수행)
+        chessPieces[lastMove[1].x, lastMove[1].y] = newPiece; // moveList에 pawn이 아닌 newPieceType으로 적용되도록 설정
+        PositionSinglePiece(lastMove[1].x, lastMove[1].y, true); // newPieceType 위치
 
         NetPromotion netPromotion = new NetPromotion
         {
@@ -889,7 +894,6 @@ public class Chessboard : MonoBehaviour
 
         if (np.teamId != currentTeam)
         {
-            Debug.Log($"{np.position.x}, {np.position.y}");
             Destroy(chessPieces[np.position.x, np.position.y].gameObject); // 기존 pawn 삭제
             ChessPiece newPiece = SpawnSinglePiece(np.newPieceType, np.teamId); // pawn -> ? (promotion 수행)
             chessPieces[np.position.x, np.position.y] = newPiece; // moveList에 pawn이 아닌 newPieceType으로 적용되도록 설정
