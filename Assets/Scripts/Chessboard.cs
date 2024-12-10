@@ -80,6 +80,7 @@ public class Chessboard : MonoBehaviour
     }
     private void Update()
     {
+        Debug.Log(currentTeam);
         if (!currentCamera) // 카메라 설정 안 됐을 경우, main camera로 설정
         {
             currentCamera = Camera.main;
@@ -156,7 +157,8 @@ public class Chessboard : MonoBehaviour
                                     ui.GetComponent<UI>().startTimer();
                                     isFirstTurn = false;
                                 }
-
+                                string runeName = tiles[hitPosition.x, hitPosition.y].GetComponent<Rune>().tileRune;
+                                ui.GetComponent<UI>().displayRune(runeName);
 
                                 // Net Implements
                                 NetMakeMove nmm = new NetMakeMove();
@@ -212,6 +214,7 @@ public class Chessboard : MonoBehaviour
             ui.GetComponent<UI>().displayRune("");
             Debug.Log("Timer reset");
             isWhiteTurn = !isWhiteTurn; // turn 순환 (white -> black -> white -> black)
+            Debug.Log(isWhiteTurn);
             if (localGame) // local Game일 경우의 turn 순환
                 currentTeam = (currentTeam == 0) ? 1 : 0;
         }
@@ -487,8 +490,11 @@ public class Chessboard : MonoBehaviour
     // Choosing chessPiece type for promotion
     private void ChoosePromotionChessType()
     {
-        if (currentTeam == (isWhiteTurn ? 1 : 0))
+        if (currentTeam == (!isWhiteTurn ? 1 : 0))
+        {
             choosingScreen.SetActive(true);
+            Debug.Log("495 line pass");
+        }
     }
     private void SendPromotionMessage(ChessPieceType promotionType)
     {
@@ -603,6 +609,7 @@ public class Chessboard : MonoBehaviour
             {
                 if ((readyPawn.team == 0 && lastMove[1].y == 7) || (readyPawn.team == 1 && lastMove[1].y == 0)) // pawn이 끝까지 도착
                 {
+                    Debug.Log("Promotion");
                     ChoosePromotionChessType();
                 }
             }

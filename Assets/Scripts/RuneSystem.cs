@@ -40,10 +40,6 @@ static public class RuneSystem
         //밟은 문양의 이름을 확인
         string activeRune = GameObject.Find("ChessBoard").GetComponent<Chessboard>().tiles[x, y].GetComponent<Rune>().tileRune;
         GameObject ui = GameObject.Find("UI");
-        if (activeRune != "None")
-        {
-            ui.GetComponent<UI>().displayRune(activeRune);  //밟은 문양을 UI로 보여주기
-        }
         switch (activeRune)
         {
             case "Parelyze":
@@ -100,7 +96,6 @@ static public class RuneSystem
 
         //점멸 문양을 밟았을 때, 이동할 수 있는 위치를 표시하기 위한 리스트
         List<Vector2Int> validPos = new List<Vector2Int>();
-        validPos.Add(currentPos);
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
@@ -108,60 +103,61 @@ static public class RuneSystem
                 Vector2Int tmp = new Vector2Int(currentPos.x - 1 + i, currentPos.y - 1 + j);
                 if ((0 <= tmp.x && tmp.x <= 7) && (0 <= tmp.y && tmp.y <= 7))
                 {
-                    if (chessboard.chessPieces[tmp.x, tmp.y] == null)
+                    if (chessboard.chessPieces[tmp.x, tmp.y] == null || tmp == currentPos)
                     {
                         validPos.Add(tmp);
                         chessboard.tiles[tmp.x, tmp.y].layer = LayerMask.NameToLayer("Highlight");  //이동 가능한 타일은 highlight로 레이어 설정}
                     }
                 }
             }
-            //유효한 타일 위치를 availableMoves에 저장
-            chessboard.availableMoves = validPos;
+        }
+        //유효한 타일 위치를 availableMoves에 저장
+        chessboard.availableMoves = validPos;
 
-            //raycast로 현재 마우스 위치에 따른 타일 상의 좌표 반환
-            RaycastHit info;
-            Ray ray = chessboard.currentCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out info, 100, LayerMask.GetMask("Tile", "Highlight")))
+        //raycast로 현재 마우스 위치에 따른 타일 상의 좌표 반환
+        RaycastHit info;
+        Ray ray = chessboard.currentCamera.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out info, 100, LayerMask.GetMask("Highlight")))
+        {
+            Vector2Int hitPosition = chessboard.GetComponent<Chessboard>().LookUpTileIndex(info.transform.gameObject);
+
+            //레이어가 highlight로 설정된 타일을 클릭하는 경우
+            if (Input.GetMouseButtonDown(0)) // mouse left 클릭
             {
-                Vector2Int hitPosition = chessboard.GetComponent<Chessboard>().LookUpTileIndex(info.transform.gameObject);
-
-                //레이어가 highlight로 설정된 타일을 클릭하는 경우
-                if (Input.GetMouseButtonDown(0)) // mouse left 클릭
+                if (chessboard.availableMoves.Contains(hitPosition))    //클릭한 타일이 이동 가능한 타일이면
                 {
-                    if (chessboard.availableMoves.Contains(hitPosition))    //클릭한 타일이 이동 가능한 타일이면
+                    if (hitPosition != currentPos)//기존 위치에서 다른 위치로 이동하는 경우
                     {
-                        if (hitPosition != currentPos)//기존 위치에서 다른 위치로 이동하는 경우
-                        {
-                            chessboard.chessPieces[hitPosition.x, hitPosition.y] = chessboard.chessPieces[currentPos.x, currentPos.y];
-                            chessboard.chessPieces[currentPos.x, currentPos.y] = null;
-                            chessboard.PositionSinglePiece(hitPosition.x, hitPosition.y, false);
-                            chessboard.lastMove.x = hitPosition.x;
-                            chessboard.lastMove.y = hitPosition.y;
-                        }
-
-
-                        //이동 종료를 위한 후처리  
-                        Debug.Log(string.Format("{0},{1} -> {2},{3}", currentPos.x, currentPos.y, hitPosition.x, hitPosition.y));   //디버깅용 로그
-                        chessboard.moveList.Add(new Vector2Int[] { currentPos, hitPosition });  //이동기록을 저장
-                        if (chessboard.CheckforCheckMate()) //이동 이후에 체크메이트 상황이 되는지 확인
-                            chessboard.CheckMate(chessboard.chessPieces[hitPosition.x, hitPosition.y].team);
-                        chessboard.RemoveHighlightTiles(); // highlight 제거
-                        chessboard.islifting = chessboard.landingPiece(); // chessPiece landing (islifting = false로 변경)
-                        chessboard.currentlyDragging = null; // 선택 말 해제
-
-                        if (hitPosition == currentPos)//제자리로 이동하는 경우 RunePhase 반복을 막기 위해 isRunePhase를 false로 변경
-                        {
-                            chessboard.isRunePhase = false;
-                        }
-
-                        //RunePhase 종료를 위한 후처리
-                        GameObject.Find("UI").GetComponent<UI>().displayRune("");   //UI에 표시 중인 문양의 이름을 지운다.
-                        GameObject.Find("UI").GetComponent<UI>().resetTimer(30);    //다음 턴 타이머를 30으로 리셋
+                        chessboard.chessPieces[hitPosition.x, hitPosition.y] = chessboard.chessPieces[currentPos.x, currentPos.y];
+                        chessboard.chessPieces[currentPos.x, currentPos.y] = null;
+                        chessboard.PositionSinglePiece(hitPosition.x, hitPosition.y, false);
+                        chessboard.lastMove.x = hitPosition.x;
+                        chessboard.lastMove.y = hitPosition.y;
+                        GameObject.Find("UI").GetComponent<UI>().displayRune(chessboard.tiles[hitPosition.x, hitPosition.y].GetComponent<Rune>().tileRune);
                     }
+
+
+                    //이동 종료를 위한 후처리  
+                    Debug.Log(string.Format("{0},{1} -> {2},{3}", currentPos.x, currentPos.y, hitPosition.x, hitPosition.y));   //디버깅용 로그
+                    chessboard.moveList.Add(new Vector2Int[] { currentPos, hitPosition });  //이동기록을 저장
+                    if (chessboard.CheckforCheckMate()) //이동 이후에 체크메이트 상황이 되는지 확인
+                        chessboard.CheckMate(chessboard.chessPieces[hitPosition.x, hitPosition.y].team);
+                    chessboard.RemoveHighlightTiles(); // highlight 제거
+                    chessboard.islifting = chessboard.landingPiece(); // chessPiece landing (islifting = false로 변경)
+                    chessboard.currentlyDragging = null; // 선택 말 해제
+
+                    if (hitPosition == currentPos)//제자리로 이동하는 경우 RunePhase 반복을 막기 위해 isRunePhase를 false로 변경
+                    {
+                        chessboard.isRunePhase = false;
+                    }
+
+                    //RunePhase 종료를 위한 후처리
+                    GameObject.Find("UI").GetComponent<UI>().resetTimer(30);    //다음 턴 타이머를 30으로 리셋
                 }
             }
         }
     }
+
 
     static private void smite()//강타
     {
@@ -198,11 +194,12 @@ static public class RuneSystem
             chessboard.moveList.Add(new Vector2Int[] { currentPos, new Vector2Int(x, y) });
             if (chessboard.CheckforCheckMate())
                 chessboard.CheckMate(chessboard.chessPieces[x, y].team);
+
+            GameObject.Find("UI").GetComponent<UI>().displayRune(chessboard.tiles[x, y].GetComponent<Rune>().tileRune);
         }
 
 
         //RunePhase를 종료하고 타이머 재설정
-        GameObject.Find("UI").GetComponent<UI>().displayRune("");
         GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
     }
 
@@ -213,7 +210,6 @@ static public class RuneSystem
 
         //RunePhase 종료
         chessboard.isRunePhase = false;
-        GameObject.Find("UI").GetComponent<UI>().displayRune("");
         GameObject.Find("UI").GetComponent<UI>().resetTimer(30); //resetTimer()에서 chessboard.isHaste를 확인하고 true면 15초가 추가된다.
 
         chessboard.isHaste = true;//상대 턴을 위한 타이머를 먼저 재설정하고 이후에 isHaste를 true로 변경하여 다음 자신의 턴에 문양 효과가 발동된다.
@@ -223,7 +219,6 @@ static public class RuneSystem
     {
         Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
         chessboard.isRunePhase = false;
-        GameObject.Find("UI").GetComponent<UI>().displayRune("");
         GameObject.Find("UI").GetComponent<UI>().resetTimer(15);   //타이머 시간을 15초로 재설정한다. 만약 isHaste가 true라면 여기에 15초를 더해 총 30초가 된다.
     }
 
@@ -260,7 +255,6 @@ static public class RuneSystem
 
                 //RunePhase 종료
                 chessboard.isRunePhase = false;
-                GameObject.Find("UI").GetComponent<UI>().displayRune("");
                 GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
             }
 
@@ -279,7 +273,6 @@ static public class RuneSystem
 
         //RunePhase 종료, 타이머 리셋
         chessboard.isRunePhase = false;
-        GameObject.Find("UI").GetComponent<UI>().displayRune("");
         GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
     }
 
@@ -294,7 +287,6 @@ static public class RuneSystem
         //Chessboard.ActiveTeamPieces()에서 isVined가 true면 false로 변경, 이후 isVined==false인 상태에서만 isActive를 true로 변경할 수 있도록 제한하여 돌아오는 자신의 턴에 기물 이동 제한
 
         chessboard.isRunePhase = false;
-        GameObject.Find("UI").GetComponent<UI>().displayRune("");
         GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
     }
 
@@ -341,7 +333,6 @@ static public class RuneSystem
                     {
                         chessboard.chessPieces[hitPosition.x, hitPosition.y].isActive = false;
                         chessboard.isRunePhase = false;
-                        GameObject.Find("UI").GetComponent<UI>().displayRune("");
                         GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
                         Debug.Log("RunPhase off");
                     }

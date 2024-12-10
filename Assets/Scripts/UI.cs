@@ -13,8 +13,9 @@ public class UI : MonoBehaviour
     public TMP_Text timerUI;
     public TMP_Text runeUI;
     private float uiTimer;
+    private float runeTimer;
     public bool timeOut = false;
-
+    private bool isSmited = false;
 
     void Awake()
     {
@@ -23,6 +24,7 @@ public class UI : MonoBehaviour
         runeUI.text = "";
         timeOut = false;
         uiTimer = 30;
+        runeTimer = 3;
     }
 
     // Update is called once per frame
@@ -31,7 +33,9 @@ public class UI : MonoBehaviour
         if (timerOn)
         {
             uiTimer -= Time.deltaTime;
+            runeTimer -= Time.deltaTime;
             timerUI.text = (math.max(0, uiTimer)).ToString("00");
+            runeUI.alpha = math.max(0, runeTimer / 3);
             if (uiTimer <= 0)
             {
                 timeOut = true;
@@ -48,7 +52,6 @@ public class UI : MonoBehaviour
     public void resetTimer(int interval)
     {
         Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
-        runeUI.text = "";
         uiTimer = interval;
         timeOut = false;
         if (chessboard.isHaste)
@@ -61,7 +64,17 @@ public class UI : MonoBehaviour
 
     public void displayRune(string runeName)
     {
-        runeUI.text = runeName;
+        if (isSmited)
+        {
+            runeUI.text += "\n" + runeName;
+            isSmited = false;
+        }
+        else
+        {
+            runeUI.text = runeName;
+        }
+        runeTimer = 3;
+        if (runeName == "Smite") isSmited = true;
     }
 
     public void startTimer()
