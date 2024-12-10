@@ -14,6 +14,7 @@ public class UI : MonoBehaviour
     public TMP_Text runeUI;
     private float uiTimer;
     public bool timeOut = false;
+    public Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
 
     void Awake()
     {
@@ -49,6 +50,11 @@ public class UI : MonoBehaviour
         runeUI.text = "";
         uiTimer = interval;
         timeOut = false;
+        if (chessboard.isHaste)
+        {
+            uiTimer = interval + 15;
+            chessboard.isHaste = false;
+        }
         Debug.Log("resetTimer called");
     }
 
@@ -60,7 +66,7 @@ public class UI : MonoBehaviour
     public void startTimer()
     {
         timerOn = true;
-        resetTimer(5);
+        resetTimer(30);
     }
 
     public void stopTimer()

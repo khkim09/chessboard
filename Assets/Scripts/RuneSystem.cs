@@ -64,11 +64,35 @@ static public class RuneSystem
                 Debug.Log("Rune:Slow");
                 slow();
                 break;
+            case "Haste":
+                Debug.Log("Rune:Haste");
+                haste();
+                break;
             default:
                 GameObject.Find("ChessBoard").GetComponent<Chessboard>().isRunePhase = false;
                 ui.GetComponent<UI>().resetTimer(30);
                 break;
         }
+    }
+
+    static private void smite()
+    {
+        Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
+
+        Vector2Int currentPos = chessboard.lastMove;
+
+        chessboard.isRunePhase = false;
+        GameObject.Find("UI").GetComponent<UI>().displayRune("");
+        GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
+    }
+
+    static private void haste()
+    {
+        Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
+        chessboard.isRunePhase = false;
+        GameObject.Find("UI").GetComponent<UI>().displayRune("");
+        GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
+        chessboard.isHaste = true;
     }
 
     static private void slow()
