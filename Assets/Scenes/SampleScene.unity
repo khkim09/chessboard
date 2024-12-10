@@ -6052,6 +6052,8 @@ MonoBehaviour:
   turn: 0
   isRunePhase: 0
   lastMove: {x: 0, y: 0}
+  isHaste: 0
+  validFlashPos: []
 --- !u!1 &1886617937
 GameObject:
   m_ObjectHideFlags: 0

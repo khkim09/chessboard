@@ -72,10 +72,72 @@ static public class RuneSystem
                 Debug.Log("Rune:Smite");
                 smite();
                 break;
+            case "Flash":
+                Debug.Log("Rune:Flash");
+                flash();
+                break;
             default:
                 GameObject.Find("ChessBoard").GetComponent<Chessboard>().isRunePhase = false;
                 ui.GetComponent<UI>().resetTimer(30);
                 break;
+        }
+    }
+
+    static private void flash()
+    {
+        Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
+        Vector2Int currentPos = chessboard.lastMove;
+
+        chessboard.islifting = true;
+        chessboard.currentlyDragging = chessboard.chessPieces[currentPos.x, currentPos.y];
+        chessboard.islifting = chessboard.liftingPiece();
+        List<Vector2Int> validPos = new List<Vector2Int>();
+
+        validPos.Add(currentPos);
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                Vector2Int tmp = new Vector2Int(currentPos.x - 1 + i, currentPos.y - 1 + j);
+                if ((0 <= tmp.x && tmp.x <= 7) && (0 <= tmp.y && tmp.y <= 7))
+                {
+                    if (chessboard.chessPieces[tmp.x, tmp.y] == null)
+                        validPos.Add(tmp);
+                    chessboard.tiles[tmp.x, tmp.y].layer = LayerMask.NameToLayer("Highlight");
+                }
+            }
+        }
+        chessboard.availableMoves = validPos;
+
+        RaycastHit info; // raycast가 충돌한 정보 저장
+        Ray ray = chessboard.currentCamera.ScreenPointToRay(Input.mousePosition); // 마우스 위치에서 화면 상 좌표를 3D로 변환하는 ray 생성
+        if (Physics.Raycast(ray, out info, 100, LayerMask.GetMask("Highlight")))
+        {
+            Vector2Int hitPosition = chessboard.GetComponent<Chessboard>().LookUpTileIndex(info.transform.gameObject);
+
+            // 선택한 chess 말 이동에 대한 작업 - chess 말 선택 (click) -> 이동 tile 선택 (click)으로 2회 click으로 구성
+            if (Input.GetMouseButtonDown(0)) // mouse left 클릭
+            {
+                if (chessboard.availableMoves.Contains(hitPosition))
+                {
+                    chessboard.chessPieces[hitPosition.x, hitPosition.y] = chessboard.chessPieces[currentPos.x, currentPos.y];
+                    chessboard.chessPieces[currentPos.x, currentPos.y] = null;
+                    chessboard.PositionSinglePiece(hitPosition.x, hitPosition.y, false);
+                    chessboard.lastMove.x = hitPosition.x;
+                    chessboard.lastMove.y = hitPosition.y;
+
+                    Debug.Log(string.Format("{0},{1} -> {2},{3}", currentPos.x, currentPos.y, hitPosition.x, hitPosition.y));
+                    chessboard.moveList.Add(new Vector2Int[] { currentPos, hitPosition });
+                    if (chessboard.CheckforCheckMate())
+                        chessboard.CheckMate(chessboard.chessPieces[hitPosition.x, hitPosition.y].team);
+                    chessboard.RemoveHighlightTiles(); // highlight 제거
+                    chessboard.islifting = chessboard.landingPiece(); // chessPiece landing (islifting = false로 변경)
+                    chessboard.currentlyDragging = null; // 선택 말 해제
+
+                    GameObject.Find("UI").GetComponent<UI>().displayRune("");
+                    GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
+                }
+            }
         }
     }
 

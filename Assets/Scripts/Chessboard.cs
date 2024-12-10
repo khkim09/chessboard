@@ -63,6 +63,7 @@ public class Chessboard : MonoBehaviour
     public Vector2Int lastMove;
     private bool isFirstTurn = true;
     public bool isHaste = false;
+    public List<Vector2Int> validFlashPos = new List<Vector2Int>();
 
 
     private void Awake() // game start 시 setting 사항
