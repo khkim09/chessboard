@@ -19,6 +19,9 @@ public class ChessPiece : MonoBehaviour
     public int currentX;
     public int currentY;
     public ChessPieceType type;
+    public bool isActive = true;
+    public bool isInvincible = false;
+    public bool isVined = false;
 
     private Vector3 desiredPosition;
     private Vector3 desiredScale = Vector3.one;
