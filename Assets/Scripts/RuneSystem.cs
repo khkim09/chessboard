@@ -74,10 +74,54 @@ static public class RuneSystem
                 Debug.Log("Rune:Flash");
                 flash();
                 break;
+            case "Observe":
+                Debug.Log("Rune:Observe");
+                observe();
+                break;
             default:    //밟은 문양이 None이면 문양 발동 페이즈를 종료하고 타이머를 리셋
                 GameObject.Find("ChessBoard").GetComponent<Chessboard>().isRunePhase = false;
                 ui.GetComponent<UI>().resetTimer(30);
                 break;
+        }
+    }
+
+    static private void observe()//관측
+    {
+        Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
+
+        //현재 마우스가 위치한 타일의 상태를 확인
+        RaycastHit info;
+        Ray ray = chessboard.currentCamera.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out info, 100, LayerMask.GetMask("Tile", "Hover")))
+        {
+            Vector2Int hitPosition = chessboard.GetComponent<Chessboard>().LookUpTileIndex(info.transform.gameObject);  //현재 마우스가 위치한 타일의 좌표를 확인
+            if (chessboard.currentHover == -Vector2Int.one) // 마우스가 게임판으로 들어오는 경우
+                                                            //currentHover==-Vector2Int.one은 마우스의 마지막 위치가 게임판 외부였음을 의미함
+            {
+                chessboard.currentHover = hitPosition;
+                chessboard.tiles[hitPosition.x, hitPosition.y].layer = LayerMask.NameToLayer("Hover"); // tile에 hover 효과 적용을 위해 layer 변경 ("Tile" -> "Hover")
+            }
+            // tile A -> tile B hovering 경우 (hovering change)
+            if (chessboard.currentHover != hitPosition) // hovering tile A -> tile B (tile 변경)
+            {
+                // 기존 "Highlight" or "Tile" layer로 각각 복구
+                chessboard.tiles[chessboard.currentHover.x, chessboard.currentHover.y].layer = chessboard.ReturnToOriginalTile();
+                chessboard.currentHover = hitPosition;
+                chessboard.tiles[hitPosition.x, hitPosition.y].layer = LayerMask.NameToLayer("Hover"); // 새로운 hover tile -> "Hover" layer로 변경
+            }
+
+            //클릭한 위치의 타일의 문양출력
+            if (Input.GetMouseButtonDown(0)) // mouse left 클릭
+            {
+                string checkedRune = chessboard.tiles[hitPosition.x, hitPosition.y].GetComponent<Rune>().tileRune; //문양을 확인
+
+                //RunePhase 종료
+                chessboard.isRunePhase = false;
+                GameObject.Find("UI").GetComponent<UI>().displayRune(checkedRune);
+                GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
+            }
+
+
         }
     }
 

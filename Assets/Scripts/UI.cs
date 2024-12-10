@@ -35,7 +35,7 @@ public class UI : MonoBehaviour
             uiTimer -= Time.deltaTime;
             runeTimer -= Time.deltaTime;
             timerUI.text = (math.max(0, uiTimer)).ToString("00");
-            runeUI.alpha = math.max(0, runeTimer / 3);
+            runeUI.alpha = math.max(0, runeTimer / 5);
             if (uiTimer <= 0)
             {
                 timeOut = true;
@@ -74,7 +74,7 @@ public class UI : MonoBehaviour
             runeUI.text = runeName;
         }
         runeTimer = 3;
-        if (runeName == "Smite") isSmited = true;
+        if (runeName == "Smite" || runeName == "Observe") isSmited = true;
     }
 
     public void startTimer()
