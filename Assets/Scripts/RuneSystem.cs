@@ -68,6 +68,10 @@ static public class RuneSystem
                 Debug.Log("Rune:Haste");
                 haste();
                 break;
+            case "Smite":
+                Debug.Log("Rune:Smite");
+                smite();
+                break;
             default:
                 GameObject.Find("ChessBoard").GetComponent<Chessboard>().isRunePhase = false;
                 ui.GetComponent<UI>().resetTimer(30);
@@ -80,8 +84,31 @@ static public class RuneSystem
         Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
 
         Vector2Int currentPos = chessboard.lastMove;
+        int x, y;
+        x = currentPos.x + Random.Range(0, 3) - 1;
+        y = currentPos.y + Random.Range(0, 3) - 1;
+        if (x < 0) x = 0;
+        else if (x > 7) x = 7;
+        if (y < 0) y = 0;
+        else if (y > 7) y = 7;
+        Debug.Log(string.Format("{0},{1} -> {2},{3}", currentPos.x, currentPos.y, x, y));
 
-        chessboard.isRunePhase = false;
+        if (chessboard.chessPieces[x, y] == null)
+        {
+            chessboard.chessPieces[x, y] = chessboard.chessPieces[currentPos.x, currentPos.y];
+            chessboard.chessPieces[currentPos.x, currentPos.y] = null;
+            chessboard.PositionSinglePiece(x, y, false);
+            chessboard.lastMove.x = x;
+            chessboard.lastMove.y = y;
+
+            Debug.Log(string.Format("{0},{1} -> {2},{3}", currentPos.x, currentPos.y, x, y));
+            chessboard.moveList.Add(new Vector2Int[] { currentPos, new Vector2Int(x, y) });
+            if (chessboard.CheckforCheckMate())
+                chessboard.CheckMate(chessboard.chessPieces[x, y].team);
+        }
+
+
+        //chessboard.isRunePhase = false;
         GameObject.Find("UI").GetComponent<UI>().displayRune("");
         GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
     }

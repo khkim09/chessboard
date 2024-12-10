@@ -346,7 +346,7 @@ public class Chessboard : MonoBehaviour
                 if (chessPieces[x, y] != null)
                     PositionSinglePiece(x, y, true); // smooth operation 구현 X : game start에서는 각 말의 즉시 positioning을 위해 'force = true'
     }
-    private void PositionSinglePiece(int x, int y, bool force)
+    public void PositionSinglePiece(int x, int y, bool force)
     {
         chessPieces[x, y].currentX = x;
         chessPieces[x, y].currentY = y;
@@ -388,7 +388,7 @@ public class Chessboard : MonoBehaviour
     }
 
     // CheckMate (Win)
-    private void CheckMate(int team)
+    public void CheckMate(int team)
     {
         DisplayVictory(team);
         GameObject.Find("UI").GetComponent<UI>().stopTimer();
@@ -685,7 +685,7 @@ public class Chessboard : MonoBehaviour
         for (int i = 0; i < movesToRemove.Count; i++)
             moves.Remove(movesToRemove[i]);
     }
-    private bool CheckforCheckMate() // checkmate라 움직일 게 없는 상황 - exit
+    public bool CheckforCheckMate() // checkmate라 움직일 게 없는 상황 - exit
     {
         Vector2Int[] lastMove = moveList[moveList.Count - 1]; // 마지막 이동 chess 말의 team 확인
         int targetTeam = chessPieces[lastMove[1].x, lastMove[1].y].team == 0 ? 1 : 0; // 반대 team의 check 상황 (lastMove가 white였으면, black이 check인 상황)
