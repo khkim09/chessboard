@@ -3,6 +3,7 @@ using UnityEngine;
 using Unity.Networking.Transport;
 using UnityEngine.UI;
 using Unity.VisualScripting;
+using Unity.Collections;
 
 public enum SpecialMove
 {
@@ -403,6 +404,15 @@ public class Chessboard : MonoBehaviour
         victoryScreen.SetActive(true);
         victoryScreen.transform.GetChild(winningTeam).gameObject.SetActive(true);
     }
+    private void Draw()
+    {
+        DisplayDraw();
+    }
+    private void DisplayDraw()
+    {
+        victoryScreen.SetActive(true);
+        victoryScreen.transform.GetChild(2).gameObject.SetActive(true);
+    }
     public void OnRematchButton()
     {
         if (localGame)
@@ -491,10 +501,11 @@ public class Chessboard : MonoBehaviour
     // Choosing chessPiece type for promotion
     private void ChoosePromotionChessType()
     {
-        if (currentTeam == (!isWhiteTurn ? 1 : 0))
-        {
+        if (localGame)
             choosingScreen.SetActive(true);
-        }
+        
+        if (currentTeam == (isWhiteTurn ? 1 : 0))
+            choosingScreen.SetActive(true);
     }
     private void SendPromotionMessage(ChessPieceType promotionType)
     {
@@ -534,17 +545,6 @@ public class Chessboard : MonoBehaviour
     public void OnQueenButton()
     {
         SendPromotionMessage(ChessPieceType.Queen);
-        /*
-        choosingScreen.SetActive(false);
-
-        Vector2Int[] lastMove = moveList[moveList.Count - 1];
-        ChessPiece readyPawn = chessPieces[lastMove[1].x, lastMove[1].y];
-
-        Destroy(chessPieces[lastMove[1].x, lastMove[1].y].gameObject);
-        ChessPiece newQueen = SpawnSinglePiece(ChessPieceType.Queen, readyPawn.team); // pawn -> queen
-        chessPieces[lastMove[1].x, lastMove[1].y] = newQueen;
-        PositionSinglePiece(lastMove[1].x, lastMove[1].y, true);
-        */
     }
 
     // Special Moves
@@ -735,13 +735,22 @@ public class Chessboard : MonoBehaviour
                 List<Vector2Int> defendingPieceMoves = defendingPieces[i].GetAvailableMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y); // 수비 team chess 말들의 이동 가능 위치 list로 저장
                 SimulateMoveForSinglePiece(defendingPieces[i], ref defendingPieceMoves, targetKing); // check 상황 제거 가능한 chess Piece있는지 모두 simulation
 
-                if (defendingPieceMoves.Count != 0) // 수비 team chess말의 이동 가능 tile이 없을 경우 
-                    return false; // check임을 반환
+                if (defendingPieceMoves.Count != 0) // 수비 team chess말의 이동 가능 tile이 있는 경우 (다른 chessPiece 옮겨서 수비 || check에서 벗어나는 moving)
+                    return false; // check 아님을 반환
             }
-            return true; // check에서 벗어날 수 있음 (다른 chessPiece 옮겨서 수비)
+            return true; // check에서 벗어날 수 없음
         }
 
         return false; // 지금 check 상황 아님
+    }
+    private bool CheckforDraw() // king 끼리만 남으면 draw
+    {
+        for (int i = 0; i < TILE_COUNT_X; i++)
+            for (int j = 0; j < TILE_COUNT_Y; j++)
+                    if (chessPieces[i, j] != null && chessPieces[i, j].type != ChessPieceType.King)
+                        return false;
+        
+        return true;
     }
 
     // Operations
@@ -813,6 +822,9 @@ public class Chessboard : MonoBehaviour
 
         if (CheckforCheckMate())
             CheckMate(cp.team);
+        
+        if (CheckforDraw())
+            Draw();
 
         return;
     }
