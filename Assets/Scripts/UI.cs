@@ -11,18 +11,19 @@ using UnityEngine.UI;
 
 public class UI : MonoBehaviour
 {
-    private bool timerOn;
+    private bool timerOn = false;
     public TMP_Text timerUI;
     public TMP_Text runeUI;
     public TMP_Text chooseUI;
     public GameObject runeIcon;
     public GameObject chooseCheck;
+    public GameObject timer;
+    public GameObject rune;
     private float uiTimer;
     private float runeTimer;
     public bool timeOut = false;
     public bool runeActive = true;
     public bool chooseDone = false;
-
 
 
     void Awake()
@@ -32,7 +33,7 @@ public class UI : MonoBehaviour
         runeUI.text = "";
         timeOut = false;
         uiTimer = 30;
-        runeTimer = 3;
+        runeTimer = 0;
     }
 
     // Update is called once per frame
@@ -57,6 +58,13 @@ public class UI : MonoBehaviour
             runeUI.text = "";
             timeOut = false;
         }
+    }
+
+    public void UIon_off(bool onoff)
+    {
+        timer.SetActive(onoff);
+        rune.SetActive(onoff);
+        runeIcon.SetActive(onoff);
     }
 
     public void resetTimer(int interval)
