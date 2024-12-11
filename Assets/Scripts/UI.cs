@@ -12,10 +12,14 @@ public class UI : MonoBehaviour
     private bool timerOn;
     public TMP_Text timerUI;
     public TMP_Text runeUI;
+    public TMP_Text chooseUI;
+    public GameObject chooseCheck;
     private float uiTimer;
     private float runeTimer;
     public bool timeOut = false;
-    private bool isSmited = false;
+    public bool runeActive = true;
+    public bool chooseDone = false;
+
 
     void Awake()
     {
@@ -64,17 +68,8 @@ public class UI : MonoBehaviour
 
     public void displayRune(string runeName)
     {
-        if (isSmited)
-        {
-            runeUI.text += "\n" + runeName;
-            isSmited = false;
-        }
-        else
-        {
-            runeUI.text = runeName;
-        }
-        runeTimer = 3;
-        if (runeName == "Smite" || runeName == "Observe") isSmited = true;
+        runeUI.text = runeName;
+        runeTimer = 5;
     }
 
     public void startTimer()
@@ -86,5 +81,19 @@ public class UI : MonoBehaviour
     public void stopTimer()
     {
         timerOn = false;
+    }
+
+    public void OnActivateButtonClick()
+    {
+        runeActive = true;
+        chooseDone = true;
+        Debug.Log("Choose: Activate");
+    }
+
+    public void OnCancelButtonClick()
+    {
+        runeActive = false;
+        chooseDone = true;
+        Debug.Log("Choose: Cancel");
     }
 }

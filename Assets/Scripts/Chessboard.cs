@@ -63,7 +63,9 @@ public class Chessboard : MonoBehaviour
     public Vector2Int lastMove;
     private bool isFirstTurn = true;
     public bool isHaste = false;
-    public List<Vector2Int> validFlashPos = new List<Vector2Int>();
+    public bool whiteChoose = false;
+    public bool blackChoose = false;
+
 
 
     private void Awake() // game start 시 setting 사항
@@ -80,7 +82,6 @@ public class Chessboard : MonoBehaviour
     }
     private void Update()
     {
-        Debug.Log(currentTeam);
         if (!currentCamera) // 카메라 설정 안 됐을 경우, main camera로 설정
         {
             currentCamera = Camera.main;
@@ -91,7 +92,7 @@ public class Chessboard : MonoBehaviour
         {
             if (isRunePhase)
             {
-                RuneSystem.RuneActivate(lastMove.x, lastMove.y);
+                RuneSystem.RuneActivate();
 
             }
             // tile에 마우스 올려 놓을 시(hover) 해당 tile 표시되도록 하는 과정
@@ -493,7 +494,6 @@ public class Chessboard : MonoBehaviour
         if (currentTeam == (!isWhiteTurn ? 1 : 0))
         {
             choosingScreen.SetActive(true);
-            Debug.Log("495 line pass");
         }
     }
     private void SendPromotionMessage(ChessPieceType promotionType)

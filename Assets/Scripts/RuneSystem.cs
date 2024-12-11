@@ -35,54 +35,92 @@ static public class RuneSystem
         return "None";
     }
 
-    static public void RuneActivate(int x, int y)
+    static public void RuneActivate()
     {
+        Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
+        Vector2Int lastMove = chessboard.lastMove;
         //밟은 문양의 이름을 확인
-        string activeRune = GameObject.Find("ChessBoard").GetComponent<Chessboard>().tiles[x, y].GetComponent<Rune>().tileRune;
-        GameObject ui = GameObject.Find("UI");
-        switch (activeRune)
+        string activeRune = chessboard.tiles[lastMove.x, lastMove.y].GetComponent<Rune>().tileRune;
+        UI ui = GameObject.Find("UI").GetComponent<UI>();
+
+        if (!ui.runeActive) activeRune = "None";    //문양이 비활성화 된 경우 밟은 문양을 None으로 취급
+
+        if (chessboard.currentTeam == 0 && chessboard.blackChoose
+        || chessboard.currentTeam == 1 && chessboard.whiteChoose)
         {
-            case "Parelyze":
-                Debug.Log("Rune: Parelyze");
-                parelyze();
-                break;
-            case "Vines":
-                Debug.Log("Rune:Vines");
-                vines();
-                break;
-            case "Frozen":
-                Debug.Log("Frozen");
-                frozen();
-                break;
-            case "Erase":
-                Debug.Log("Rune:Erase");
-                erase();
-                break;
-            case "Slow":
-                Debug.Log("Rune:Slow");
-                slow();
-                break;
-            case "Haste":
-                Debug.Log("Rune:Haste");
-                haste();
-                break;
-            case "Smite":
-                Debug.Log("Rune:Smite");
-                smite();
-                break;
-            case "Flash":
-                Debug.Log("Rune:Flash");
-                flash();
-                break;
-            case "Observe":
-                Debug.Log("Rune:Observe");
-                observe();
-                break;
-            default:    //밟은 문양이 None이면 문양 발동 페이즈를 종료하고 타이머를 리셋
-                GameObject.Find("ChessBoard").GetComponent<Chessboard>().isRunePhase = false;
-                ui.GetComponent<UI>().resetTimer(30);
-                break;
+            ui.chooseUI.text = activeRune;
+            ui.chooseCheck.SetActive(true);
+            if (ui.chooseDone) //문양 발동 여부를 선택 완료함
+            {
+                ui.chooseCheck.SetActive(false);    //선택이 종료되면 UI 비활성화
+                if (chessboard.currentTeam == 0)//검은색 플레이어가 선택을 종료함
+                    chessboard.blackChoose = false;
+                if (chessboard.currentTeam == 1)//흰색 플레이어가 선택을 종료함
+                    chessboard.whiteChoose = false;
+                ui.chooseDone = false;//다음 선택을 위해 비활성화
+            }
         }
+        else
+        {
+            switch (activeRune)
+            {
+                case "Parelyze": // 마비 (상대 기물 선택, 다음 차례 이동 불가 - 상대에게 적용)
+                    Debug.Log("Rune: Parelyze");
+                    parelyze();
+                    break;
+                case "Vines": // 덩굴 (해당 tile 위치한 기물, 다음 턴 이동 불가 - 나한테 적용)
+                    Debug.Log("Rune:Vines");
+                    vines();
+                    break;
+                case "Frozen": // 빙결 (이어지는 상대 turn, 무적 상태)
+                    Debug.Log("Frozen");
+                    frozen();
+                    break;
+                case "Erase": // 소멸 (선택 tile 심볼 제거)
+                    Debug.Log("Rune:Erase");
+                    erase();
+                    break;
+                case "Slow": // 감속 (다음 내 턴 타이머 +15s)
+                    Debug.Log("Rune:Slow");
+                    slow();
+                    break;
+                case "Haste": // 가속 (다음 상대 턴 타이머 15s)
+                    Debug.Log("Rune:Haste");
+                    haste();
+                    break;
+                case "Smite": // 강타 (무작위 방향으로 해당 기물 이동)
+                    Debug.Log("Rune:Smite");
+                    smite();
+                    break;
+                case "Flash": // 점멸 (해당 타일 포함 주변 9개 tile 중 비어있는 곳으로 이동 가능)
+                    Debug.Log("Rune:Flash");
+                    flash();
+                    break;
+                case "Observe": // 관측 (선택 tile 심볼 확인)
+                    Debug.Log("Rune:Observe");
+                    observe();
+                    break;
+                case "Choose":
+                    Debug.Log("Rune:Choose");
+                    choose();
+                    break;
+                default:    //밟은 문양이 None이면 문양 발동 페이즈를 종료하고 타이머를 리셋
+                    chessboard.isRunePhase = false;
+                    ui.resetTimer(30);
+                    ui.runeActive = true;
+                    break;
+            }
+        }
+    }
+
+    static private void choose()
+    {
+        Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
+        if (chessboard.currentTeam == 0) chessboard.blackChoose = true;
+        else if (chessboard.currentTeam == 1) chessboard.whiteChoose = true;
+
+        chessboard.isRunePhase = false;
+        GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
     }
 
     static private void observe()//관측
@@ -117,7 +155,7 @@ static public class RuneSystem
 
                 //RunePhase 종료
                 chessboard.isRunePhase = false;
-                GameObject.Find("UI").GetComponent<UI>().displayRune(checkedRune);
+                GameObject.Find("UI").GetComponent<UI>().displayRune("Observe\n" + checkedRune);
                 GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
             }
 
@@ -239,7 +277,7 @@ static public class RuneSystem
             if (chessboard.CheckforCheckMate())
                 chessboard.CheckMate(chessboard.chessPieces[x, y].team);
 
-            GameObject.Find("UI").GetComponent<UI>().displayRune(chessboard.tiles[x, y].GetComponent<Rune>().tileRune);
+            GameObject.Find("UI").GetComponent<UI>().displayRune("Smite\n" + chessboard.tiles[x, y].GetComponent<Rune>().tileRune);
         }
 
 
@@ -294,7 +332,9 @@ static public class RuneSystem
             //클릭한 위치의 타일의 문양을 None으로 변경
             if (Input.GetMouseButtonDown(0)) // mouse left 클릭
             {
-                chessboard.tiles[hitPosition.x, hitPosition.y].GetComponent<Rune>().tileRune = "None";//문양을 None으로 변경
+                string erasedRune = chessboard.tiles[hitPosition.x, hitPosition.y].GetComponent<Rune>().tileRune;//지울 문양
+                chessboard.tiles[hitPosition.x, hitPosition.y].GetComponent<Rune>().tileRune = "None";
+                GameObject.Find("UI").GetComponent<UI>().displayRune(erasedRune + " erased");
                 chessboard.tiles[hitPosition.x, hitPosition.y].transform.name = string.Format("X:{0} Y:{1} Rune:None", hitPosition.x, hitPosition.y);//유니티 하이어커리창에서의 타일의 이름을 변경
 
                 //RunePhase 종료
