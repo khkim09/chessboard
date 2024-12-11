@@ -337,7 +337,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &48662249
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1145,7 +1145,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &204668692
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4837,6 +4837,8 @@ MonoBehaviour:
   chooseUI: {fileID: 235440738}
   runeIcon: {fileID: 204668691}
   chooseCheck: {fileID: 1490051246}
+  timer: {fileID: 1521025229}
+  rune: {fileID: 48662248}
   timeOut: 0
   runeActive: 1
   chooseDone: 0
@@ -5562,7 +5564,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1521025230
 MonoBehaviour:
   m_ObjectHideFlags: 0

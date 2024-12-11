@@ -35,8 +35,8 @@ public class GameUI : MonoBehaviour
     {
         for (int i = 0; i < cameraAngles.Length; i++)
             cameraAngles[i].SetActive(false);
-        
-        cameraAngles[(int) index].SetActive(true);
+
+        cameraAngles[(int)index].SetActive(true);
     }
 
     // Buttons
@@ -46,6 +46,10 @@ public class GameUI : MonoBehaviour
         SetLocalGame?.Invoke(true);
         server.Init(8520);
         client.Init("127.0.0.1", 8520);
+        UI ui = GameObject.Find("UI").GetComponent<UI>();
+        ui.UIon_off(true);
+        ui.startTimer();
+
     }
     public void OnOnlineGameButton()
     {

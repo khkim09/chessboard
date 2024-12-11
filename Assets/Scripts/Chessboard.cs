@@ -403,6 +403,8 @@ public class Chessboard : MonoBehaviour
     {
         victoryScreen.SetActive(true);
         victoryScreen.transform.GetChild(winningTeam).gameObject.SetActive(true);
+        GameObject.Find("UI").GetComponent<UI>().stopTimer();
+        GameObject.Find("UI").GetComponent<UI>().UIon_off(false);
     }
     private void Draw()
     {
@@ -412,6 +414,8 @@ public class Chessboard : MonoBehaviour
     {
         victoryScreen.SetActive(true);
         victoryScreen.transform.GetChild(2).gameObject.SetActive(true);
+        GameObject.Find("UI").GetComponent<UI>().stopTimer();
+        GameObject.Find("UI").GetComponent<UI>().UIon_off(false);
     }
     public void OnRematchButton()
     {
@@ -479,6 +483,9 @@ public class Chessboard : MonoBehaviour
         SpawnAllPieces();
         PositionAllPieces();
         isWhiteTurn = true; // always white first
+
+        GameObject.Find("UI").GetComponent<UI>().startTimer();
+        GameObject.Find("UI").GetComponent<UI>().UIon_off(true);
     }
     public void OnMenuButton()
     {
@@ -503,7 +510,7 @@ public class Chessboard : MonoBehaviour
     {
         if (localGame)
             choosingScreen.SetActive(true);
-        
+
         if (currentTeam == (isWhiteTurn ? 1 : 0))
             choosingScreen.SetActive(true);
     }
@@ -747,9 +754,9 @@ public class Chessboard : MonoBehaviour
     {
         for (int i = 0; i < TILE_COUNT_X; i++)
             for (int j = 0; j < TILE_COUNT_Y; j++)
-                    if (chessPieces[i, j] != null && chessPieces[i, j].type != ChessPieceType.King)
-                        return false;
-        
+                if (chessPieces[i, j] != null && chessPieces[i, j].type != ChessPieceType.King)
+                    return false;
+
         return true;
     }
 
@@ -822,7 +829,7 @@ public class Chessboard : MonoBehaviour
 
         if (CheckforCheckMate())
             CheckMate(cp.team);
-        
+
         if (CheckforDraw())
             Draw();
 
