@@ -42,39 +42,39 @@ static public class RuneSystem
         GameObject ui = GameObject.Find("UI");
         switch (activeRune)
         {
-            case "Parelyze":
+            case "Parelyze": // 마비 (상대 기물 선택, 다음 차례 이동 불가 - 상대에게 적용)
                 Debug.Log("Rune: Parelyze");
                 parelyze();
                 break;
-            case "Vines":
+            case "Vines": // 덩굴 (해당 tile 위치한 기물, 다음 턴 이동 불가 - 나한테 적용)
                 Debug.Log("Rune:Vines");
                 vines();
                 break;
-            case "Frozen":
+            case "Frozen": // 빙결 (이어지는 상대 turn, 무적 상태)
                 Debug.Log("Frozen");
                 frozen();
                 break;
-            case "Erase":
+            case "Erase": // 소멸 (선택 tile 심볼 제거)
                 Debug.Log("Rune:Erase");
                 erase();
                 break;
-            case "Slow":
+            case "Slow": // 감속 (다음 내 턴 타이머 +15s)
                 Debug.Log("Rune:Slow");
                 slow();
                 break;
-            case "Haste":
+            case "Haste": // 가속 (다음 상대 턴 타이머 15s)
                 Debug.Log("Rune:Haste");
                 haste();
                 break;
-            case "Smite":
+            case "Smite": // 강타 (무작위 방향으로 해당 기물 이동)
                 Debug.Log("Rune:Smite");
                 smite();
                 break;
-            case "Flash":
+            case "Flash": // 점멸 (해당 타일 포함 주변 9개 tile 중 비어있는 곳으로 이동 가능)
                 Debug.Log("Rune:Flash");
                 flash();
                 break;
-            case "Observe":
+            case "Observe": // 관측 (선택 tile 심볼 확인)
                 Debug.Log("Rune:Observe");
                 observe();
                 break;
@@ -213,16 +213,14 @@ static public class RuneSystem
         x = currentPos.x + Random.Range(0, 3) - 1;
         y = currentPos.y + Random.Range(0, 3) - 1;
 
-        //만약 선택된 타일이 게임판 범위를 넘어간다면 다시 안으로 되돌려준다.
-        if (x < 0) x = 0;
-        else if (x > 7) x = 7;
-        if (y < 0) y = 0;
-        else if (y > 7) y = 7;
+        //만약 선택된 타일이 게임판 범위를 넘어간다면 무효 처리
+        if (x < 0 || x > 7) return;
+        if (y < 0 || y > 7) return;
 
         //기존 위치에서 smite로 인해 이동될 위치를 표시
         Debug.Log(string.Format("Estimated Smite: {0},{1} -> {2},{3}", currentPos.x, currentPos.y, x, y));
 
-        if (chessboard.chessPieces[x, y] == null)   //선택된 타일에 아무 기물도 없을 경우에만 작동
+        if (chessboard.chessPieces[x, y] == null) //선택된 타일에 아무 기물도 없을 경우에만 작동
         {
             //이동
             chessboard.chessPieces[x, y] = chessboard.chessPieces[currentPos.x, currentPos.y];
@@ -247,7 +245,7 @@ static public class RuneSystem
         GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
     }
 
-    static private void haste()//가속
+    static private void slow() // 감속 (다음 턴 +15s)
     {
         //게임이 진행 중인 Chessboard를 불러와 다음 자신의 턴에 bool isHaste를 확인하여 타이머에 15초를 더한다.
         Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
@@ -259,7 +257,7 @@ static public class RuneSystem
         chessboard.isHaste = true;//상대 턴을 위한 타이머를 먼저 재설정하고 이후에 isHaste를 true로 변경하여 다음 자신의 턴에 문양 효과가 발동된다.
     }
 
-    static private void slow()//감속
+    static private void haste() // 가속 (타이머 15s)
     {
         Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
         chessboard.isRunePhase = false;
@@ -334,7 +332,7 @@ static public class RuneSystem
         GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
     }
 
-    static private void parelyze()
+    static private void parelyze() // 마비
     {
         Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
         RaycastHit info; // raycast가 충돌한 정보 저장
