@@ -18,7 +18,7 @@ static public class RuneSystem
                 int rand = Random.Range(1, 11);
                 switch (rand)
                 {
-                    case 1: return "Parelyze";
+                    case 1: return "Paralyze";
                     case 2: return "Vines";
                     case 3: return "Frozen";
                     case 4: return "Haste";
@@ -42,9 +42,9 @@ static public class RuneSystem
         GameObject ui = GameObject.Find("UI");
         switch (activeRune)
         {
-            case "Parelyze": // 마비 (상대 기물 선택, 다음 차례 이동 불가 - 상대에게 적용)
-                Debug.Log("Rune: Parelyze");
-                parelyze();
+            case "Paralyze": // 마비 (상대 기물 선택, 다음 차례 이동 불가 - 상대에게 적용)
+                Debug.Log("Rune: Paralyze");
+                paralyze();
                 break;
             case "Vines": // 덩굴 (해당 tile 위치한 기물, 다음 턴 이동 불가 - 나한테 적용)
                 Debug.Log("Rune:Vines");
@@ -332,7 +332,7 @@ static public class RuneSystem
         GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
     }
 
-    static private void parelyze() // 마비
+    static private void paralyze() // 마비
     {
         Chessboard chessboard = GameObject.Find("ChessBoard").GetComponent<Chessboard>();
         RaycastHit info; // raycast가 충돌한 정보 저장
