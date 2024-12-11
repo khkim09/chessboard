@@ -2,10 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+//using Microsoft.Unity.VisualStudio.Editor;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 public class UI : MonoBehaviour
 {
@@ -13,12 +15,14 @@ public class UI : MonoBehaviour
     public TMP_Text timerUI;
     public TMP_Text runeUI;
     public TMP_Text chooseUI;
+    public GameObject runeIcon;
     public GameObject chooseCheck;
     private float uiTimer;
     private float runeTimer;
     public bool timeOut = false;
     public bool runeActive = true;
     public bool chooseDone = false;
+
 
 
     void Awake()
@@ -68,6 +72,8 @@ public class UI : MonoBehaviour
 
     public void displayRune(string runeName)
     {
+        //Image image = Resources.Load(runeName);
+        //runeIcon.GetComponent<Image>().sprite =;
         runeUI.text = runeName;
         runeTimer = 5;
     }
