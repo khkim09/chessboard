@@ -72,10 +72,17 @@ public class UI : MonoBehaviour
 
     public void displayRune(string runeName)
     {
-        //Image image = Resources.Load(runeName);
-        //runeIcon.GetComponent<Image>().sprite =;
-        runeUI.text = runeName;
+        char[] deli = { ' ', '\n' };
+        string[] runes = runeName.Split(deli);
+
+
+        runeUI.text = runes[0];
         runeTimer = 5;
+    }
+
+    public void displayIcon(string runeName)
+    {
+
     }
 
     public void startTimer()
