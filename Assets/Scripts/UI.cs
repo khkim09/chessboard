@@ -44,6 +44,8 @@ public class UI : MonoBehaviour
             runeTimer -= Time.deltaTime;
             timerUI.text = (math.max(0, uiTimer)).ToString("00");
             runeUI.alpha = math.max(0, runeTimer / 5);
+            Image icon = runeIcon.GetComponent<Image>();
+            icon.color = new Color(icon.color.r, icon.color.g, icon.color.b, math.max(0, runeTimer / 5));
             if (uiTimer <= 0)
             {
                 timeOut = true;
@@ -74,15 +76,16 @@ public class UI : MonoBehaviour
     {
         char[] deli = { ' ', '\n' };
         string[] runes = runeName.Split(deli);
+        displayIcon(runes[0]);
 
-
-        runeUI.text = runes[0];
+        runeUI.text = runeName;
         runeTimer = 5;
     }
 
     public void displayIcon(string runeName)
     {
-
+        runeIcon.GetComponent<Image>().sprite = Resources.Load<Sprite>(runeName);
+        runeTimer = 5;
     }
 
     public void startTimer()

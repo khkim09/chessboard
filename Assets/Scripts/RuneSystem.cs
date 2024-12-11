@@ -156,6 +156,7 @@ static public class RuneSystem
                 //RunePhase 종료
                 chessboard.isRunePhase = false;
                 GameObject.Find("UI").GetComponent<UI>().displayRune("Observe\n" + checkedRune);
+                GameObject.Find("UI").GetComponent<UI>().displayIcon(chessboard.tiles[hitPosition.x, hitPosition.y].GetComponent<Rune>().tileRune);
                 GameObject.Find("UI").GetComponent<UI>().resetTimer(30);
             }
 
@@ -278,6 +279,7 @@ static public class RuneSystem
                 chessboard.CheckMate(chessboard.chessPieces[x, y].team);
 
             GameObject.Find("UI").GetComponent<UI>().displayRune("Smite\n" + chessboard.tiles[x, y].GetComponent<Rune>().tileRune);
+            GameObject.Find("UI").GetComponent<UI>().displayIcon(chessboard.tiles[x, y].GetComponent<Rune>().tileRune);
         }
 
 
