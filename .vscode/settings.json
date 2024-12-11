@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "chessboard.sln"
+    "dotnet.defaultSolution": "Chess.sln"
 }
